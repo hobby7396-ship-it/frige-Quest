@@ -1,0 +1,739 @@
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>冷蔵庫クエスト - 2~3品献立＆栄養バランス</title>
+  <!-- Chart.js for Radar Chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Shippori+Mincho:wght@500;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pixel-width: 430px;
+      --pixel-height: 920px;
+      --bg-main: #0d1117;
+      --card-bg: #161b22;
+      --card-border: #30363d;
+      --accent-color: #00e5ff;
+      --accent-gold: #ffb703;
+      --accent-pink: #ff2a6d;
+      --accent-green: #05ffa1;
+      --text-main: #f0f6fc;
+      --text-sub: #8b949e;
+      --paper-bg: #faf8f5;
+      --paper-text: #2c2c2c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #05070a;
+      color: var(--text-main);
+      font-family: 'Zen Maru Gothic', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: var(--pixel-width);
+      height: 100vh;
+      max-height: var(--pixel-height);
+      background-color: var(--bg-main);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0, 229, 255, 0.15);
+    }
+
+    @media (min-width: 450px) {
+      .app-container {
+        height: 95vh;
+        border-radius: 36px;
+        border: 4px solid #21262d;
+      }
+    }
+
+    .header-bar {
+      padding: 16px 20px 12px;
+      background: rgba(13, 17, 23, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .user-profile {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .level-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lvl-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-gold), #ff8800);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 0.85rem;
+      color: #000;
+      box-shadow: 0 0 12px rgba(255, 183, 3, 0.4);
+      border: 2px solid #fff;
+    }
+
+    .title-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .rank-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .rank-sub {
+      font-size: 0.7rem;
+      color: var(--accent-color);
+      letter-spacing: 0.5px;
+    }
+
+    .exp-container {
+      text-align: right;
+    }
+
+    .exp-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      margin-bottom: 3px;
+    }
+
+    .exp-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #21262d;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .exp-bar-fill {
+      height: 100%;
+      width: 48%;
+      background: linear-gradient(90deg, var(--accent-color), var(--accent-green));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 12px 20px 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 9px;
+      background: #161b22;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: var(--text-sub);
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: rgba(0, 229, 255, 0.12);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px 100px;
+      scroll-behavior: smooth;
+    }
+
+    .cat-filter-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .filter-chip {
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #161b22;
+      border: 1px solid var(--card-border);
+      color: var(--text-sub);
+      font-size: 0.7rem;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .filter-chip.active {
+      background: var(--card-border);
+      color: #fff;
+      border-color: var(--text-sub);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      margin-top: 4px;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .add-food-btn {
+      background: rgba(5, 255, 161, 0.15);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .add-food-btn:active {
+      transform: scale(0.96);
+    }
+
+    .ingredient-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .ingredient-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 16px;
+      padding: 12px 6px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .ingredient-card.selected {
+      border-color: var(--accent-color);
+      background: rgba(0, 229, 255, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 229, 255, 0.25);
+    }
+
+    .ingredient-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 18px;
+      height: 18px;
+      background: var(--accent-color);
+      color: #000;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 42, 109, 0.85);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      z-index: 2;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .ingredient-card:hover .delete-btn {
+      opacity: 1;
+    }
+
+    .ing-icon {
+      font-size: 2.2rem;
+      margin-bottom: 2px;
+      line-height: 1;
+    }
+
+    .ing-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .ing-cat {
+      font-size: 0.6rem;
+      color: var(--text-sub);
+    }
+
+    .nutrition-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .nutrition-summary {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--card-border);
+      line-height: 1.4;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 190px;
+    }
+
+    .action-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px 24px;
+      background: linear-gradient(180deg, rgba(13,17,23,0) 0%, rgba(13,17,23,0.95) 30%, #0d1117 100%);
+      z-index: 20;
+    }
+
+    .generate-btn {
+      width: 100%;
+      height: 54px;
+      border-radius: 27px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent-gold), #ff8800);
+      color: #000;
+      font-size: 1rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(255, 183, 3, 0.4);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    .generate-btn:active {
+      transform: scale(0.98);
+    }
+
+    .recipe-view {
+      display: none;
+      padding: 16px 20px 100px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .recipe-book-header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px 0;
+      background: rgba(255, 183, 3, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 183, 3, 0.2);
+    }
+
+    .recipe-book-title {
+      font-family: 'Shippori Mincho', serif;
+      font-size: 1.3rem;
+      color: var(--accent-gold);
+      margin-bottom: 4px;
+    }
+
+    .recipe-card {
+      background: var(--paper-bg);
+      color: var(--paper-text);
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .recipe-img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      border-bottom: 2px solid #eee;
+    }
+
+    .recipe-body {
+      padding: 16px;
+    }
+
+    .recipe-badge {
+      display: inline-block;
+      background: #e63946;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .recipe-badge.sub {
+      background: #457b9d;
+    }
+
+    .recipe-badge.soup {
+      background: #2a9d8f;
+    }
+
+    .recipe-title {
+      font-family: 'Shippori Mincho', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #1a1a1a;
+      line-height: 1.3;
+    }
+
+    .recipe-ingredients {
+      font-size: 0.75rem;
+      color: #555;
+      margin-bottom: 10px;
+      border-bottom: 1px stroke #e0e0e0;
+      padding-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .recipe-steps {
+      font-size: 0.8rem;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .modal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(5px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .modal-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .input-group {
+      margin-bottom: 14px;
+    }
+
+    .input-label {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #0d1117;
+      border: 1px solid var(--card-border);
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent-color);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: transparent;
+      color: #fff;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent-green);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- HEADER -->
+  <div class="header-bar">
+    <div class="user-profile">
+      <div class="level-badge">
+        <div class="lvl-circle" id="userLvlCircle">Lv.3</div>
+        <div class="title-group">
+          <span class="rank-title" id="userRankTitle">見習い料理勇者</span>
+          <span class="rank-sub" id="userRankSub">RANK C • 献立マスター</span>
+        </div>
+      </div>
+      <div class="exp-container">
+        <div class="exp-num" id="expText">240 / 500 EXP</div>
+      </div>
+    </div>
+    <div class="exp-bar-bg">
+      <div class="exp-bar-fill" id="expBarFill"></div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="nav-tabs">
+    <div class="tab-btn active" id="tabSelect" onclick="switchTab('select')">食材チョイス</div>
+    <div class="tab-btn" id="tabRecipe" onclick="switchTab('recipe')">完成献立 (2~3品)</div>
+  </div>
+
+  <!-- SELECT VIEW -->
+  <div id="selectView" class="main-content">
+    <div class="cat-filter-bar">
+      <button class="filter-chip active" onclick="filterCat('all', this)">すべて</button>
+      <button class="filter-chip" onclick="filterCat('protein', this)">タンパク質</button>
+      <button class="filter-chip" onclick="filterCat('vitamin', this)">ビタミン・野菜</button>
+      <button class="filter-chip" onclick="filterCat('carbo', this)">主食・炭水化物</button>
+    </div>
+
+    <div class="section-header">
+      <span class="section-title">📦 冷蔵庫の食材を選択</span>
+      <button class="add-food-btn" onclick="openAddModal()">＋ 食材を追加</button>
+    </div>
+
+    <div class="ingredient-grid" id="ingredientGrid"></div>
+
+    <div class="section-header">
+      <span class="section-title">📊 リアルタイム栄養バランス</span>
+    </div>
+    <div class="nutrition-card">
+      <div class="chart-container">
+        <canvas id="nutritionChart"></canvas>
+      </div>
+      <div class="nutrition-summary" id="nutritionSummary">
+        食材を選択すると、栄養バランス（タンパク質・脂質・炭水化物・ビタミン・食物繊維）が自動計算されます。
+      </div>
+    </div>
+  </div>
+
+  <!-- RECIPE VIEW -->
+  <div id="recipeView" class="recipe-view">
+    <div class="recipe-book-header">
+      <div class="recipe-book-title">✨ 本日のシェフおすすめ献立</div>
+      <div style="font-size:0.75rem; color:var(--text-sub);">冷蔵庫の食材で作るバランスコース</div>
+    </div>
+    <div id="recipeCardsContainer"></div>
+  </div>
+
+  <!-- BOTTOM ACTION PANEL -->
+  <div class="action-panel">
+    <button class="generate-btn" id="generateBtn" onclick="generateMenu()">
+      <span>✨ 2〜3品献立をクエスト生成</span>
+    </button>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal" id="addModal">
+  <div class="modal-content">
+    <div class="modal-title">🥗 新しい食材を登録</div>
+    <div class="input-group">
+      <label class="input-label">食材名 (自動判定)</label>
+      <input type="text" id="foodNameInput" class="input-field" placeholder="例: かぼちゃ, 牛乳, バター, ささみ" oninput="autoDetectAll(this.value)">
+    </div>
+    <div class="input-group">
+      <label class="input-label">絵文字アイコン</label>
+      <input type="text" id="foodEmojiInput" class="input-field" value="🥦">
+    </div>
+    <div class="input-group">
+      <label class="input-label">カテゴリー (PFC)</label>
+      <select id="foodCatSelect" class="input-field">
+        <option value="protein">タンパク質 (P: 肉・魚・卵・豆・乳製品)</option>
+        <option value="vitamin">ビタミン (野菜・きのこ・果物)</option>
+        <option value="carbo">炭水化物 (C: 芋・米・麺・パン・かぼちゃ)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeAddModal()">キャンセル</button>
+      <button class="btn-primary" onclick="addCustomIngredient()">追加する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // スーパーで買える一般的食材の大規模判定辞書 (150種以上)
+  const ingredientDB = {
+    // 【野菜・きのこ・果物・根菜】
+    'かぼちゃ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ' },
+    'カボチャ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ' },
+    '南瓜': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ' },
+    'パンプキン': { icon: '🎃', cat: 'carbo', kana: 'ぱんぷきん' },
+    'キャベツ': { icon: '🥬', cat: 'vitamin', kana: 'きゃべつ' },
+    'レタス': { icon: '🥬', cat: 'vitamin', kana: 'れたす' },
+    'ほうれん草': { icon: '🥬', cat: 'vitamin', kana: 'ほうれんそう' },
+    'ホウレンソウ': { icon: '🥬', cat: 'vitamin', kana: 'ほうれんそう' },
+    '小松菜': { icon: '🥬', cat: 'vitamin', kana: 'こまつな' },
+    'コマツナ': { icon: '🥬', cat: 'vitamin', kana: 'こまつな' },
+    '白菜': { icon: '🥬', cat: 'vitamin', kana: 'はくさい' },
+    '水菜': { icon: '🥬', cat: 'vitamin', kana: 'みずな' },
+    'チンゲンサイ': { icon: '🥬', cat: 'vitamin', kana: 'ちんげんさい' },
+    '青梗菜': { icon: '🥬', cat: 'vitamin', kana: 'ちんげんさい' },
+    '大根': { icon: '🥬', cat: 'vitamin', kana: 'だいこん' },
+    'ダイコン': { icon: '🥬', cat: 'vitamin', kana: 'だいこん' },
+    'かぶ': { icon: '🥬', cat: 'vitamin', kana: 'かぶ' },
+    '玉ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'たまねぎ' },
+    'タマネギ': { icon: '🧅', cat: 'vitamin', kana: 'たまねぎ' },
+    'たまねぎ': { icon: '🧅', cat: 'vitamin', kana: 'たまねぎ' },
+    '長ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'ながねぎ' },
+    'ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'ねぎ' },
+    'ネギ': { icon: '🧅', cat: 'vitamin', kana: 'ねぎ' },
+    'にんじん': { icon: '🥕', cat: 'vitamin', kana: 'にんじん' },
+    'ニンジン': { icon: '🥕', cat: 'vitamin', kana: 'にんじん' },
+    '人参': { icon: '🥕', cat: 'vitamin', kana: 'にんじん' },
+    'トマト': { icon: '🍅', cat: 'vitamin', kana: 'とまと' },
+    'ミニトマト': { icon: '🍅', cat: 'vitamin', kana: 'みにとまと' },
+    'きゅうり': { icon: '🥒', cat: 'vitamin', kana: 'きゅうり' },
+    'キュウリ': { icon: '🥒', cat: 'vitamin', kana: 'きゅうり' },
+    '胡瓜': { icon: '🥒', cat: 'vitamin', kana: 'きゅうり' },
+    'ズッキーニ': { icon: '🥒', cat: 'vitamin', kana: 'ずっきーに' },
+    'ゴーヤ': { icon: '🥒', cat: 'vitamin', kana: 'ごーや' },
+    'ナス': { icon: '🍆', cat: 'vitamin', kana: 'なす' },
+    'なす': { icon: '🍆', cat: 'vitamin', kana: 'なす' },
+    '茄子': { icon: '🍆', cat: 'vitamin', kana: 'なす' },
+    'ブロッコリー': { icon: '🥦', cat: 'vitamin', kana: 'ぶろっこりー' },
+    'アスパラ': { icon: '🥦', cat: 'vitamin', kana: 'あすぱら' },
+    'アスパラガス': { icon: '🥦', cat: 'vitamin', kana: 'あすぱらがす' },
+    'カリフラワー': { icon: '🥦', cat: 'vitamin', kana: 'かりふらわー' },
+    'ピーマン': { icon: '🫑', cat: 'vitamin', kana: 'ぴーまん' },
+    'パプリカ': { icon: '🫑', cat: 'vitamin', kana: 'ぱぷりか' },
+    'ししとう': { icon: '🫑', cat: 'vitamin', kana: 'ししとう' },
+    'アボカド': { icon: '🥑', cat: 'vitamin', kana: 'あぼかど' },
+    'とうもろこし': { icon: '🌽', cat: 'vitamin', kana: 'とうもろこし' },
+    'コーン': { icon: '🌽', cat: 'vitamin', kana: 'こーん' },
+    'きのこ': { icon: '🍄', cat: 'vitamin', kana: 'きのこ' },
+    'しめじ': { icon: '🍄', cat: 'vitamin', kana: 'しめじ' },
+    'えのき': { icon: '🍄', cat: 'vitamin', kana: 'えのき' },
+    'エリンギ': { icon: '🍄', cat: 'vitamin', kana: 'えりんぎ' },
+    '椎茸': { icon: '🍄', cat: 'vitamin', kana: 'しいたけ' },
+    'しいたけ': { icon: '🍄', cat: 'vitamin', kana: 'しいたけ' },
+    '舞茸': { icon: '🍄', cat: 'vitamin', kana: 'まいたけ' },
+    'まいたけ': { icon: '🍄', cat: 'vitamin', kana: 'まいたけ' },
+    'マッシュルーム': { icon: '🍄', cat: 'vitamin', kana: 'まっしゅるーむ' },
+    'もやし': { icon: '🌱', cat: 'vitamin', kana: 'もやし' },
+    'オクラ': { icon: '🌱', cat: 'vitamin', kana: 'おくら' },
+    'ニンニク': { icon: '🧄', cat: 'vitamin', kana: 'にんにく' },
+    'にんにく': { icon: '🧄', cat: 'vitamin', kana: 'にんにく' },
+    'ショウガ': { icon: '🫚', cat: 'vitamin', kana: 'しょうが' },
+    '生姜': { icon: '🫚', cat: 'vitamin', kana: 'しょうが' },
+    'ごぼう': { icon: '🍠', cat: 'vitamin', kana: 'ごぼう' },
+    'ゴボウ': { icon: '🍠', cat: 'vitamin', kana: 'ごぼう' },
+    'れんこん': { icon: '🍠', 
