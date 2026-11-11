@@ -693,10 +693,10 @@
     }
 
     const savedXP = localStorage.getItem('fridge_quest_xp');
-    if (savedXP) userXP = parseInt(savedXP, 10) || 240;
+    if (savedXP !== null) userXP = parseInt(savedXP, 10) || 240;
 
     const savedLvl = localStorage.getItem('fridge_quest_lvl');
-    if (savedLvl) userLvl = parseInt(savedLvl, 10) || 3;
+    if (savedLvl !== null) userLvl = parseInt(savedLvl, 10) || 3;
 
     updateXPUI();
   }
@@ -947,21 +947,21 @@
     const container = document.getElementById('recipeCardsContainer');
     container.innerHTML = `
       <div class="recipe-card">
-        <img class="recipe-img" src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80" alt="主菜">
+        <img class="recipe-img" src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80" alt="主菜イメージ">
         <div class="recipe-body">
           <span class="recipe-badge">主菜 (メイン)</span>
-          <div class="recipe-title">【特製】食材旨味たっぷりの贅沢炒め</div>
+          <div class="recipe-title">【特製】厳選食材のジューシー旨味炒め</div>
           <div class="recipe-ingredients">使用食材: ${names}</div>
-          <div class="recipe-steps">1. 食材を一口大に切り、炒めます。<br>2. 醤油・みりん・胡椒で味を調えたら完成！</div>
+          <div class="recipe-steps">1. 選択した食材を食べやすい大きさにカットします。<br>2. フライパンで炒め、醤油・みりん・塩コショウで香ばしく味付けすれば完成！</div>
         </div>
       </div>
       <div class="recipe-card">
-        <img class="recipe-img" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80" alt="副菜">
+        <img class="recipe-img" src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80" alt="副菜イメージ">
         <div class="recipe-body">
           <span class="recipe-badge sub">副菜 (サブ)</span>
-          <div class="recipe-title">シャキシャキ素材のさっぱり和え</div>
+          <div class="recipe-title">シャキッとヘルシーさっぱり小鉢</div>
           <div class="recipe-ingredients">使用食材: お手元の野菜類・ポン酢・ごま油</div>
-          <div class="recipe-steps">1. 野菜を和えてさっぱり仕上げます。</div>
+          <div class="recipe-steps">1. 野菜をサッと和えて、風味豊かなごま油とポン酢でさっぱりと仕上げます。</div>
         </div>
       </div>
     `;
