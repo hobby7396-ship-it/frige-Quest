@@ -610,7 +610,7 @@
     <div class="modal-title">🥗 新しい食材を登録</div>
     <div class="input-group">
       <label class="input-label">食材名 (自動判定)</label>
-      <input type="text" id="foodNameInput" class="input-field" placeholder="例: かまぼこ, 豚バラ, ピーマン" oninput="autoDetectAll(this.value)">
+      <input type="text" id="foodNameInput" class="input-field" placeholder="例: かまぼこ, 豚バラ, ピーマン" oninput="autoDetectAll(this.value)" onblur="autoDetectAll(this.value)">
     </div>
     <div class="input-group">
       <label class="input-label">絵文字アイコン</label>
@@ -895,24 +895,22 @@
   }
 
   function autoDetectAll(val) {
-    const trimmed = val.trim();
+    const trimmed = (val || '').trim();
     if (!trimmed) return;
 
-    // 1. データベース完全一致または部分一致（文字数が長いものを優先）
     let matchedKey = Object.keys(ingredientDB)
       .sort((a, b) => b.length - a.length)
       .find(k => trimmed === k || trimmed.includes(k));
 
-    if (matchedKey && ingredientDB[matchedKey]) {
-      const data = ingredientDB[matchedKey];
-      document.getElementById('foodEmojiInput').value = data.icon;
-      document.getElementById('foodCatSelect').value = data.cat;
-      return;
-    }
-
-    // 2. パターン判定（スーパーの一般食材を網羅）
     const emojiInput = document.getElementById('foodEmojiInput');
     const catSelect = document.getElementById('foodCatSelect');
+
+    if (matchedKey && ingredientDB[matchedKey]) {
+      const data = ingredientDB[matchedKey];
+      emojiInput.value = data.icon;
+      catSelect.value = data.cat;
+      return;
+    }
 
     if (/(かまぼこ|カマボコ|蒲鉾|なると|はんぺん)/.test(trimmed)) {
       catSelect.value = 'protein';
@@ -1056,7 +1054,11 @@
   }
 
   function addCustomIngredient() {
-    const name = document.getElementById('foodNameInput').value.trim();
+    const nameInput = document.getElementById('foodNameInput');
+    // 追加時に強制再判定を実行
+    autoDetectAll(nameInput.value);
+
+    const name = nameInput.value.trim();
     const icon = document.getElementById('foodEmojiInput').value.trim() || '🥗';
     const cat = document.getElementById('foodCatSelect').value;
 
@@ -1071,7 +1073,7 @@
     });
 
     saveData();
-    document.getElementById('foodNameInput').value = '';
+    nameInput.value = '';
     closeAddModal();
     renderGrid();
   }
