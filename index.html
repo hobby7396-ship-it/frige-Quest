@@ -610,7 +610,7 @@
     <div class="modal-title">🥗 新しい食材を登録</div>
     <div class="input-group">
       <label class="input-label">食材名 (自動判定)</label>
-      <input type="text" id="foodNameInput" class="input-field" placeholder="例: かぼちゃ, 牛乳, ささみ" oninput="autoDetectAll(this.value)">
+      <input type="text" id="foodNameInput" class="input-field" placeholder="例: かまぼこ, 豚バラ, ピーマン" oninput="autoDetectAll(this.value)">
     </div>
     <div class="input-group">
       <label class="input-label">絵文字アイコン</label>
@@ -619,8 +619,8 @@
     <div class="input-group">
       <label class="input-label">カテゴリー (PFC)</label>
       <select id="foodCatSelect" class="input-field">
-        <option value="protein">タンパク質 (肉・魚・卵・豆・乳製品)</option>
-        <option value="vitamin">ビタミン (野菜・きのこ・果物)</option>
+        <option value="protein">タンパク質 (肉・魚・卵・豆・練り物・乳製品)</option>
+        <option value="vitamin">ビタミン (野菜・きのこ・海藻・果物)</option>
         <option value="carbo">炭水化物 (芋・米・麺・パン・かぼちゃ)</option>
       </select>
     </div>
@@ -633,31 +633,142 @@
 
 <script>
   const ingredientDB = {
-    'かぼちゃ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ' },
-    'カボチャ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ' },
-    'キャベツ': { icon: '🥬', cat: 'vitamin', kana: 'きゃべつ' },
-    'ほうれん草': { icon: '🥬', cat: 'vitamin', kana: 'ほうれんそう' },
-    '玉ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'たまねぎ' },
-    'にんじん': { icon: '🥕', cat: 'vitamin', kana: 'にんじん' },
-    'トマト': { icon: '🍅', cat: 'vitamin', kana: 'とまと' },
-    'ブロッコリー': { icon: '🥦', cat: 'vitamin', kana: 'ぶろっこりー' },
-    'きゅうり': { icon: '🥒', cat: 'vitamin', kana: 'きゅうり' },
-    'しめじ': { icon: '🍄', cat: 'vitamin', kana: 'しめじ' },
+    // 練り物・加工肉
+    'かまぼこ': { icon: '🍥', cat: 'protein', kana: 'かまぼこ' },
+    'カマボコ': { icon: '🍥', cat: 'protein', kana: 'かまぼこ' },
+    '蒲鉾': { icon: '🍥', cat: 'protein', kana: 'かまぼこ' },
+    'なると': { icon: '🍥', cat: 'protein', kana: 'なると' },
+    'はんぺん': { icon: '🍥', cat: 'protein', kana: 'はんぺん' },
+    'ちくわ': { icon: '🍢', cat: 'protein', kana: 'ちくわ' },
+    'さつま揚げ': { icon: '🍢', cat: 'protein', kana: 'さつまあげ' },
+    'カニカマ': { icon: '🦀', cat: 'protein', kana: 'かにかま' },
+    'かにかま': { icon: '🦀', cat: 'protein', kana: 'かにかま' },
+    'ウインナー': { icon: '🌭', cat: 'protein', kana: 'ういんなー' },
+    'ソーセージ': { icon: '🌭', cat: 'protein', kana: 'そーせーじ' },
+    'ベーコン': { icon: '🥓', cat: 'protein', kana: 'べーこん' },
+    'ハム': { icon: '🍖', cat: 'protein', kana: 'はむ' },
+    'ちりめんじゃこ': { icon: '🐟', cat: 'protein', kana: 'ちりめんじゃこ' },
+    'しらす': { icon: '🐟', cat: 'protein', kana: 'しらす' },
+    'ツナ缶': { icon: '🥫', cat: 'protein', kana: 'つなかん' },
+
+    // 肉類
     '豚肉': { icon: '🐷', cat: 'protein', kana: 'ぶたにく' },
+    '豚バラ': { icon: '🐷', cat: 'protein', kana: 'ぶたばら' },
+    '豚こま': { icon: '🐷', cat: 'protein', kana: 'ぶたこま' },
+    '豚ロース': { icon: '🐷', cat: 'protein', kana: 'ぶたろーす' },
     '鶏肉': { icon: '🐔', cat: 'protein', kana: 'とりにく' },
     '鶏むね肉': { icon: '🐔', cat: 'protein', kana: 'とりむねにく' },
+    '鶏もも肉': { icon: '🍗', cat: 'protein', kana: 'とりももにく' },
+    'ささみ': { icon: '🐔', cat: 'protein', kana: 'ささみ' },
+    '手羽先': { icon: '🍗', cat: 'protein', kana: 'てばさき' },
+    '手羽元': { icon: '🍗', cat: 'protein', kana: 'てばもと' },
     '牛肉': { icon: '🐮', cat: 'protein', kana: 'ぎゅうにく' },
+    'ひき肉': { icon: '🥩', cat: 'protein', kana: 'ひきにく' },
+    '挽肉': { icon: '🥩', cat: 'protein', kana: 'ひきにく' },
+
+    // 魚介類
+    '鮭': { icon: '🐟', cat: 'protein', kana: 'さけ' },
     '生鮭': { icon: '🐟', cat: 'protein', kana: 'なまざけ' },
+    'サーモン': { icon: '🐟', cat: 'protein', kana: 'さーもん' },
+    'さば': { icon: '🐟', cat: 'protein', kana: 'さば' },
+    'サバ': { icon: '🐟', cat: 'protein', kana: 'さば' },
+    'あじ': { icon: '🐟', cat: 'protein', kana: 'あじ' },
+    'ぶり': { icon: '🐟', cat: 'protein', kana: 'ぶり' },
+    'たら': { icon: '🐟', cat: 'protein', kana: 'たら' },
+    'まぐろ': { icon: '🐟', cat: 'protein', kana: 'まぐろ' },
+    'えび': { icon: '🦐', cat: 'protein', kana: 'えび' },
+    'エビ': { icon: '🦐', cat: 'protein', kana: 'えび' },
+    'いか': { icon: '🦑', cat: 'protein', kana: 'いか' },
+    'イカ': { icon: '🦑', cat: 'protein', kana: 'いか' },
+    'たこ': { icon: '🐙', cat: 'protein', kana: 'たこ' },
+    'タコ': { icon: '🐙', cat: 'protein', kana: 'たこ' },
+    'あさり': { icon: '🐚', cat: 'protein', kana: 'あさり' },
+    'しじみ': { icon: '🐚', cat: 'protein', kana: 'しじみ' },
+    'ほたて': { icon: '🦪', cat: 'protein', kana: 'ほたて' },
+
+    // 大豆・卵・乳製品
     '豆腐': { icon: '🧊', cat: 'protein', kana: 'とうふ' },
     '絹豆腐': { icon: '🧊', cat: 'protein', kana: 'きぬどうふ' },
+    '木綿豆腐': { icon: '🧊', cat: 'protein', kana: 'もめんどうふ' },
+    '油揚げ': { icon: '🟫', cat: 'protein', kana: 'あぶらあげ' },
+    '厚揚げ': { icon: '🟫', cat: 'protein', kana: 'あつあげ' },
     '納豆': { icon: '🫘', cat: 'protein', kana: 'なっとう' },
+    '豆乳': { icon: '🥛', cat: 'protein', kana: 'とうにゅう' },
     '牛乳': { icon: '🥛', cat: 'protein', kana: 'ぎゅうにゅう' },
     'チーズ': { icon: '🧀', cat: 'protein', kana: 'ちーず' },
+    'ヨーグルト': { icon: '🍨', cat: 'protein', kana: 'よーぐると' },
+    'バター': { icon: '🧈', cat: 'protein', kana: 'ばたー' },
     '卵': { icon: '🥚', cat: 'protein', kana: 'たまご' },
+    'たまご': { icon: '🥚', cat: 'protein', kana: 'たまご' },
+    'うずらの卵': { icon: '🥚', cat: 'protein', kana: 'うずらのたまご' },
+
+    // 野菜・きのこ・海藻
+    'キャベツ': { icon: '🥬', cat: 'vitamin', kana: 'きゃべつ' },
+    '白菜': { icon: '🥬', cat: 'vitamin', kana: 'はくさい' },
+    'レタス': { icon: '🥬', cat: 'vitamin', kana: 'れたす' },
+    'ほうれん草': { icon: '🥬', cat: 'vitamin', kana: 'ほうれんそう' },
+    '小松菜': { icon: '🥬', cat: 'vitamin', kana: 'こまつな' },
+    '水菜': { icon: '🥬', cat: 'vitamin', kana: 'みずな' },
+    'チンゲン菜': { icon: '🥬', cat: 'vitamin', kana: 'ちんげんさい' },
+    'もやし': { icon: '🌱', cat: 'vitamin', kana: 'もやし' },
+    '豆苗': { icon: '🌱', cat: 'vitamin', kana: 'とうみょう' },
+    'ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'ねぎ' },
+    '長ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'ながねぎ' },
+    '玉ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'たまねぎ' },
+    'にんにく': { icon: '🧄', cat: 'vitamin', kana: 'にんにく' },
+    'しょうが': { icon: '🫚', cat: 'vitamin', kana: 'しょうが' },
+    'にんじん': { icon: '🥕', cat: 'vitamin', kana: 'にんじん' },
+    '大根': { icon: '🤍', cat: 'vitamin', kana: 'だいこん' },
+    'ごぼう': { icon: '🪵', cat: 'vitamin', kana: 'ごぼう' },
+    'れんこん': { icon: '🪷', cat: 'vitamin', kana: 'れんこん' },
+    'トマト': { icon: '🍅', cat: 'vitamin', kana: 'とまと' },
+    'ミニトマト': { icon: '🍅', cat: 'vitamin', kana: 'みにとまと' },
+    'ブロッコリー': { icon: '🥦', cat: 'vitamin', kana: 'ぶろっこりー' },
+    'きゅうり': { icon: '🥒', cat: 'vitamin', kana: 'きゅうり' },
+    'ズッキーニ': { icon: '🥒', cat: 'vitamin', kana: 'ずっきーに' },
+    'なす': { icon: '🍆', cat: 'vitamin', kana: 'なす' },
+    'ナス': { icon: '🍆', cat: 'vitamin', kana: 'なす' },
+    'ピーマン': { icon: '🫑', cat: 'vitamin', kana: 'ぴーまん' },
+    'パプリカ': { icon: '🫑', cat: 'vitamin', kana: 'ぱぷりか' },
+    'アボカド': { icon: '🥑', cat: 'vitamin', kana: 'あぼかど' },
+    'とうもろこし': { icon: '🌽', cat: 'vitamin', kana: 'とうもろこし' },
+    '枝豆': { icon: '🫛', cat: 'vitamin', kana: 'えだまめ' },
+    'さやえんどう': { icon: '🫛', cat: 'vitamin', kana: 'さやえんどう' },
+    'オクラ': { icon: '🫑', cat: 'vitamin', kana: 'おくら' },
+    'しめじ': { icon: '🍄', cat: 'vitamin', kana: 'しめじ' },
+    'えのき': { icon: '🍄', cat: 'vitamin', kana: 'えのき' },
+    'しいたけ': { icon: '🍄', cat: 'vitamin', kana: 'しいたけ' },
+    'まいたけ': { icon: '🍄', cat: 'vitamin', kana: 'まいたけ' },
+    'エリンギ': { icon: '🍄', cat: 'vitamin', kana: 'えりんぎ' },
+    'なめこ': { icon: '🍄', cat: 'vitamin', kana: 'なめこ' },
+    'わかめ': { icon: '🌿', cat: 'vitamin', kana: 'わかめ' },
+    'ひじき': { icon: '🌿', cat: 'vitamin', kana: 'ひじき' },
+    'こんにゃく': { icon: '🩶', cat: 'vitamin', kana: 'こんにゃく' },
+    'しらたき': { icon: '🍜', cat: 'vitamin', kana: 'しらたき' },
+
+    // 主食・炭水化物・芋類
+    'かぼちゃ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ' },
+    'カボチャ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ' },
     'じゃがいも': { icon: '🥔', cat: 'carbo', kana: 'じゃがいも' },
+    'さつまいも': { icon: '🍠', cat: 'carbo', kana: 'さつまいも' },
+    '里芋': { icon: '🥔', cat: 'carbo', kana: 'さといも' },
+    '長芋': { icon: '🥔', cat: 'carbo', kana: 'ながいも' },
     '米': { icon: '🍚', cat: 'carbo', kana: 'こめ' },
+    'ごはん': { icon: '🍚', cat: 'carbo', kana: 'ごはん' },
     '食パン': { icon: '🍞', cat: 'carbo', kana: 'しょくぱん' },
-    'うどん': { icon: '🍜', cat: 'carbo', kana: 'うどん' }
+    'パン': { icon: '🍞', cat: 'carbo', kana: 'ぱん' },
+    'うどん': { icon: '🍜', cat: 'carbo', kana: 'うどん' },
+    'そば': { icon: '🍜', cat: 'carbo', kana: 'そば' },
+    'ラーメン': { icon: '🍜', cat: 'carbo', kana: 'らーめん' },
+    '中華麺': { icon: '🍜', cat: 'carbo', kana: 'ちゅうかめん' },
+    '焼きそば': { icon: '🍜', cat: 'carbo', kana: 'やきそば' },
+    'パスタ': { icon: '🍝', cat: 'carbo', kana: 'ぱすた' },
+    'スパゲッティ': { icon: '🍝', cat: 'carbo', kana: 'すぱげってぃ' },
+    'マカロニ': { icon: '🍝', cat: 'carbo', kana: 'まかろに' },
+    '餅': { icon: '🍡', cat: 'carbo', kana: 'もち' },
+    '切り餅': { icon: '🍡', cat: 'carbo', kana: 'きりもち' },
+    '餃子の皮': { icon: '🥟', cat: 'carbo', kana: 'ぎょうざのかわ' },
+    '春雨': { icon: '🍜', cat: 'carbo', kana: 'はるさめ' }
   };
 
   const initialIngredients = [
@@ -787,9 +898,10 @@
     const trimmed = val.trim();
     if (!trimmed) return;
 
+    // 1. データベース完全一致または部分一致（文字数が長いものを優先）
     let matchedKey = Object.keys(ingredientDB)
       .sort((a, b) => b.length - a.length)
-      .find(k => trimmed === k || trimmed.includes(k) || k.includes(trimmed));
+      .find(k => trimmed === k || trimmed.includes(k));
 
     if (matchedKey && ingredientDB[matchedKey]) {
       const data = ingredientDB[matchedKey];
@@ -798,25 +910,148 @@
       return;
     }
 
-    if (/(かぼちゃ|カボチャ|南瓜|芋|いも|ポテト|米|飯|パン|麺|パスタ|うどん)/.test(trimmed)) {
-      document.getElementById('foodCatSelect').value = 'carbo';
-      if (/(かぼちゃ|カボチャ)/.test(trimmed)) document.getElementById('foodEmojiInput').value = '🎃';
-      else document.getElementById('foodEmojiInput').value = '🍚';
-    } else if (/(豚|ポーク)/.test(trimmed)) {
-      document.getElementById('foodCatSelect').value = 'protein';
-      document.getElementById('foodEmojiInput').value = '🐷';
-    } else if (/(鶏|チキン|ささみ)/.test(trimmed)) {
-      document.getElementById('foodCatSelect').value = 'protein';
-      document.getElementById('foodEmojiInput').value = '🐔';
-    } else if (/(牛|ビーフ)/.test(trimmed)) {
-      document.getElementById('foodCatSelect').value = 'protein';
-      document.getElementById('foodEmojiInput').value = '🐮';
-    } else if (/(牛乳|豆腐|卵|肉|魚|チーズ)/.test(trimmed)) {
-      document.getElementById('foodCatSelect').value = 'protein';
-      document.getElementById('foodEmojiInput').value = '🥩';
+    // 2. パターン判定（スーパーの一般食材を網羅）
+    const emojiInput = document.getElementById('foodEmojiInput');
+    const catSelect = document.getElementById('foodCatSelect');
+
+    if (/(かまぼこ|カマボコ|蒲鉾|なると|はんぺん)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🍥';
+    } else if (/(ちくわ|竹輪|さつま揚|おでん|つみれ)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🍢';
+    } else if (/(カニカマ|かにかま|カニ|蟹)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🦀';
+    } else if (/(ウインナー|ウィンナー|ソーセージ|フランク)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🌭';
+    } else if (/(ベーコン)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🥓';
+    } else if (/(ハム|チャーシュー|焼豚)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🍖';
+    } else if (/(豚|ポーク|ロース|バラ|こま)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🐷';
+    } else if (/(鶏|とり|チキン|ささみ|手羽|砂肝|レバー|むね|もも)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🐔';
+    } else if (/(牛|ぎゅう|ビーフ|カルビ|タン|ステーキ)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🐮';
+    } else if (/(ひき肉|挽肉|ミンチ|肉)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🥩';
+    } else if (/(えび|エビ|海老)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🦐';
+    } else if (/(いか|イカ|烏賊)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🦑';
+    } else if (/(たこ|タコ|蛸)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🐙';
+    } else if (/(貝|あさり|しじみ|ほたて|ホタテ|牡蠣|かき)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🐚';
+    } else if (/(魚|さかな|鮭|サケ|サーモン|サバ|さば|アジ|あじ|ブリ|ぶり|タラ|たら|マグロ|まぐろ|サンマ|さんま|イワシ|いわし|カツオ|かつお|しらす|じゃこ|干物)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🐟';
+    } else if (/(卵|たまご|タマゴ|玉子)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🥚';
+    } else if (/(豆腐|とうふ)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🧊';
+    } else if (/(油揚げ|厚揚げ|がんも)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🟫';
+    } else if (/(納豆|豆|大豆|ひよこ豆|ミックスビーンズ)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🫘';
+    } else if (/(牛乳|ミルク|豆乳)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🥛';
+    } else if (/(チーズ)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🧀';
+    } else if (/(ヨーグルト)/.test(trimmed)) {
+      catSelect.value = 'protein';
+      emojiInput.value = '🍨';
+    } else if (/(かぼちゃ|カボチャ|南瓜)/.test(trimmed)) {
+      catSelect.value = 'carbo';
+      emojiInput.value = '🎃';
+    } else if (/(さつまいも|サツマイモ|さつま芋)/.test(trimmed)) {
+      catSelect.value = 'carbo';
+      emojiInput.value = '🍠';
+    } else if (/(芋|いも|ポテト|じゃが|里芋|長芋|山芋)/.test(trimmed)) {
+      catSelect.value = 'carbo';
+      emojiInput.value = '🥔';
+    } else if (/(パスタ|スパゲッティ|マカロニ|ペンネ)/.test(trimmed)) {
+      catSelect.value = 'carbo';
+      emojiInput.value = '🍝';
+    } else if (/(麺|めん|うどん|そば|ラーメン|中華麺|焼きそば|そうめん|ひやむぎ|春雨)/.test(trimmed)) {
+      catSelect.value = 'carbo';
+      emojiInput.value = '🍜';
+    } else if (/(パン|バゲット|ロールパン|食パン|クロワッサン)/.test(trimmed)) {
+      catSelect.value = 'carbo';
+      emojiInput.value = '🍞';
+    } else if (/(餅|もち)/.test(trimmed)) {
+      catSelect.value = 'carbo';
+      emojiInput.value = '🍡';
+    } else if (/(米|こめ|飯|ごはん|ご飯)/.test(trimmed)) {
+      catSelect.value = 'carbo';
+      emojiInput.value = '🍚';
+    } else if (/(きのこ|キノコ|しめじ|えのき|しいたけ|椎茸|まいたけ|舞茸|エリンギ|なめこ|マッシュルーム)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🍄';
+    } else if (/(なす|ナス|茄子)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🍆';
+    } else if (/(トマト|とまと)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🍅';
+    } else if (/(にんじん|ニンジン|人参)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🥕';
+    } else if (/(ピーマン|パプリカ|ししとう|オクラ)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🫑';
+    } else if (/(きゅうり|キュウリ|胡瓜|ズッキーニ|ゴーヤ)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🥒';
+    } else if (/(玉ねぎ|たまねぎ|ねぎ|ネギ|葱|ニラ|にら|らっきょう)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🧅';
+    } else if (/(にんにく|ニンニク|大蒜)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🧄';
+    } else if (/(ブロッコリー|カリフラワー)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🥦';
+    } else if (/(コーン|とうもろこし|ヤングコーン)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🌽';
+    } else if (/(アボカド)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🥑';
+    } else if (/(もやし|豆苗|かいわれ|スプラウト)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🌱';
+    } else if (/(枝豆|えだまめ|さやえんどう|インゲン|いんげん|スナップエンドウ|グリンピース)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🫛';
+    } else if (/(わかめ|ワカメ|ひじき|昆布|こんぶ|海苔|のり|もずく|めかぶ)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🌿';
+    } else if (/(キャベツ|白菜|レタス|ほうれん草|小松菜|水菜|春菊|チンゲン菜|菜|葉)/.test(trimmed)) {
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🥬';
     } else {
-      document.getElementById('foodCatSelect').value = 'vitamin';
-      document.getElementById('foodEmojiInput').value = '🥗';
+      catSelect.value = 'vitamin';
+      emojiInput.value = '🥗';
     }
   }
 
