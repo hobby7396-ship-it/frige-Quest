@@ -20,6 +20,7 @@
       --accent-gold: #ffb703;
       --accent-pink: #ff2a6d;
       --accent-green: #05ffa1;
+      --accent-purple: #b565ff;
       --text-main: #f0f6fc;
       --text-sub: #8b949e;
     }
@@ -185,20 +186,21 @@
     }
 
     .filter-chip {
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 20px;
       background: #161b22;
       border: 1px solid var(--card-border);
       color: var(--text-sub);
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       white-space: nowrap;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
 
     .filter-chip.active {
-      background: var(--card-border);
-      color: #fff;
-      border-color: var(--text-sub);
+      background: rgba(0, 229, 255, 0.12);
+      color: var(--accent-color);
+      border-color: var(--accent-color);
     }
 
     .section-header {
@@ -401,6 +403,12 @@
       overflow: hidden;
       margin-bottom: 20px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      animation: fadeSlideIn 0.35s ease;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .recipe-img-wrapper {
@@ -417,6 +425,7 @@
       object-fit: cover;
       border-bottom: 1px solid var(--card-border);
       filter: brightness(0.95);
+      transition: opacity 0.3s ease;
     }
 
     .recipe-body {
@@ -428,6 +437,7 @@
       align-items: center;
       gap: 8px;
       margin-bottom: 8px;
+      flex-wrap: wrap;
     }
 
     .recipe-badge {
@@ -445,6 +455,12 @@
       background: rgba(0, 229, 255, 0.12); 
       border-color: var(--accent-color); 
       color: var(--accent-color); 
+    }
+
+    .recipe-badge.sub2 { 
+      background: rgba(181, 101, 255, 0.15); 
+      border-color: var(--accent-purple); 
+      color: var(--accent-purple); 
     }
     
     .recipe-badge.soup { 
@@ -608,10 +624,10 @@
   <!-- SELECT VIEW -->
   <div id="selectView" class="main-content">
     <div class="cat-filter-bar">
-      <button class="filter-chip active" onclick="filterCat('all', this)">すべて</button>
-      <button class="filter-chip" onclick="filterCat('protein', this)">タンパク質</button>
-      <button class="filter-chip" onclick="filterCat('vitamin', this)">ビタミン・野菜</button>
-      <button class="filter-chip" onclick="filterCat('carbo', this)">主食・炭水化物</button>
+      <button class="filter-chip active" onclick="filterRoom('all', this)">すべて</button>
+      <button class="filter-chip" onclick="filterRoom('chilled', this)">❄️ チルド室</button>
+      <button class="filter-chip" onclick="filterRoom('fridge', this)">🥛 冷蔵室</button>
+      <button class="filter-chip" onclick="filterRoom('veggie', this)">🥬 野菜室</button>
     </div>
 
     <div class="section-header">
@@ -669,11 +685,11 @@
       <input type="text" id="foodEmojiInput" class="input-field" value="🥗">
     </div>
     <div class="input-group">
-      <label class="input-label">カテゴリー (PFC)</label>
-      <select id="foodCatSelect" class="input-field">
-        <option value="protein">タンパク質 (肉・魚・卵・豆・練り物・乳製品)</option>
-        <option value="vitamin">ビタミン (野菜・きのこ・海藻・果物)</option>
-        <option value="carbo">炭水化物 (芋・米・麺・パン・かぼちゃ)</option>
+      <label class="input-label">収納場所 (ルーム)</label>
+      <select id="foodRoomSelect" class="input-field">
+        <option value="chilled">チルド室 (肉・魚・納豆・ベーコン等)</option>
+        <option value="fridge">冷蔵室 (卵・乳製品・調味料等)</option>
+        <option value="veggie">野菜室 (野菜・果物・芋類等)</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -685,335 +701,466 @@
 
 <script>
   const ingredientDB = {
-    // 果物 (role: 'fruit')
-    'りんご': { icon: '🍎', cat: 'vitamin', kana: 'りんご', role: 'fruit' },
-    'リンゴ': { icon: '🍎', cat: 'vitamin', kana: 'りんご', role: 'fruit' },
-    '林檎': { icon: '🍎', cat: 'vitamin', kana: 'りんご', role: 'fruit' },
-    'みかん': { icon: '🍊', cat: 'vitamin', kana: 'みかん', role: 'fruit' },
-    'オレンジ': { icon: '🍊', cat: 'vitamin', kana: 'おれんじ', role: 'fruit' },
-    'バナナ': { icon: '🍌', cat: 'vitamin', kana: 'ばなな', role: 'fruit' },
-    'いちご': { icon: '🍓', cat: 'vitamin', kana: 'いちご', role: 'fruit' },
-    'イチゴ': { icon: '🍓', cat: 'vitamin', kana: 'いちご', role: 'fruit' },
-    'ぶどう': { icon: '🍇', cat: 'vitamin', kana: 'ぶどう', role: 'fruit' },
-    'キウイ': { icon: '🥝', cat: 'vitamin', kana: 'きうい', role: 'fruit' },
-    'もも': { icon: '🍑', cat: 'vitamin', kana: 'もも', role: 'fruit' },
-    'レモン': { icon: '🍋', cat: 'vitamin', kana: 'れもん', role: 'fruit' },
+    // 果物 (role: 'fruit', room: 'veggie')
+    'りんご': { icon: '🍎', cat: 'vitamin', kana: 'りんご', room: 'veggie', role: 'fruit' },
+    'リンゴ': { icon: '🍎', cat: 'vitamin', kana: 'りんご', room: 'veggie', role: 'fruit' },
+    '林檎': { icon: '🍎', cat: 'vitamin', kana: 'りんご', room: 'veggie', role: 'fruit' },
+    'みかん': { icon: '🍊', cat: 'vitamin', kana: 'みかん', room: 'veggie', role: 'fruit' },
+    'オレンジ': { icon: '🍊', cat: 'vitamin', kana: 'おれんじ', room: 'veggie', role: 'fruit' },
+    'バナナ': { icon: '🍌', cat: 'vitamin', kana: 'ばなな', room: 'veggie', role: 'fruit' },
+    'いちご': { icon: '🍓', cat: 'vitamin', kana: 'いちご', room: 'veggie', role: 'fruit' },
+    'イチゴ': { icon: '🍓', cat: 'vitamin', kana: 'いちご', room: 'veggie', role: 'fruit' },
+    'ぶどう': { icon: '🍇', cat: 'vitamin', kana: 'ぶどう', room: 'veggie', role: 'fruit' },
+    'キウイ': { icon: '🥝', cat: 'vitamin', kana: 'きうい', room: 'veggie', role: 'fruit' },
+    'もも': { icon: '🍑', cat: 'vitamin', kana: 'もも', room: 'veggie', role: 'fruit' },
+    'レモン': { icon: '🍋', cat: 'vitamin', kana: 'れもん', room: 'veggie', role: 'fruit' },
 
-    // 練り物・加工品・小鉢向き (role: 'ready')
-    'かまぼこ': { icon: '🍥', cat: 'protein', kana: 'かまぼこ', role: 'ready' },
-    'カマボコ': { icon: '🍥', cat: 'protein', kana: 'かまぼこ', role: 'ready' },
-    '蒲鉾': { icon: '🍥', cat: 'protein', kana: 'かまぼこ', role: 'ready' },
-    'なると': { icon: '🍥', cat: 'protein', kana: 'なると', role: 'ready' },
-    'はんぺん': { icon: '🍥', cat: 'protein', kana: 'はんぺん', role: 'ready' },
-    'ちくわ': { icon: '🍢', cat: 'protein', kana: 'ちくわ', role: 'ready' },
-    'さつま揚げ': { icon: '🍢', cat: 'protein', kana: 'さつまあげ', role: 'ready' },
-    'カニカマ': { icon: '🦀', cat: 'protein', kana: 'かにかま', role: 'ready' },
-    'かにかま': { icon: '🦀', cat: 'protein', kana: 'かにかま', role: 'ready' },
-    'ちりめんじゃこ': { icon: '🐟', cat: 'protein', kana: 'ちりめんじゃこ', role: 'ready' },
-    'しらす': { icon: '🐟', cat: 'protein', kana: 'しらす', role: 'ready' },
-    '納豆': { icon: '🫘', cat: 'protein', kana: 'なっとう', role: 'ready' },
-    'ヨーグルト': { icon: '🥛', cat: 'protein', kana: 'よーぐると', role: 'ready' },
-    'チーズ': { icon: '🧀', cat: 'protein', kana: 'ちーず', role: 'ready' },
+    // 主食・麺類・ご飯類 (room: 'veggie')
+    '米': { icon: '🍚', cat: 'carbo', kana: 'こめ', room: 'veggie', role: 'staple_rice' },
+    'ごはん': { icon: '🍚', cat: 'carbo', kana: 'ごはん', room: 'veggie', role: 'staple_rice' },
+    'ご飯': { icon: '🍚', cat: 'carbo', kana: 'ごはん', room: 'veggie', role: 'staple_rice' },
+    '食パン': { icon: '🍞', cat: 'carbo', kana: 'しょくぱん', room: 'veggie', role: 'staple_bread' },
+    'パン': { icon: '🍞', cat: 'carbo', kana: 'ぱん', room: 'veggie', role: 'staple_bread' },
+    'うどん': { icon: '🍜', cat: 'carbo', kana: 'うどん', room: 'veggie', role: 'staple_noodle' },
+    '中華麺': { icon: '🍜', cat: 'carbo', kana: 'ちゅうかめん', room: 'veggie', role: 'staple_noodle' },
+    'ラーメン': { icon: '🍜', cat: 'carbo', kana: 'らーめん', room: 'veggie', role: 'staple_noodle' },
+    '焼きそば': { icon: '🍜', cat: 'carbo', kana: 'やきそば', room: 'veggie', role: 'staple_noodle' },
+    'そば': { icon: '🍜', cat: 'carbo', kana: 'そば', room: 'veggie', role: 'staple_noodle' },
+    'パスタ': { icon: '🍝', cat: 'carbo', kana: 'ぱすた', room: 'veggie', role: 'staple_pasta' },
+    'スパゲッティ': { icon: '🍝', cat: 'carbo', kana: 'すぱげってぃ', room: 'veggie', role: 'staple_pasta' },
+    '餅': { icon: '🍡', cat: 'carbo', kana: 'もち', room: 'veggie', role: 'staple_rice' },
 
-    // 通常のタンパク質
-    'ウインナー': { icon: '🌭', cat: 'protein', kana: 'ういんなー' },
-    'ソーセージ': { icon: '🌭', cat: 'protein', kana: 'そーせーじ' },
-    'ベーコン': { icon: '🥓', cat: 'protein', kana: 'べーこん' },
-    'ハム': { icon: '🍖', cat: 'protein', kana: 'はむ' },
-    'ツナ缶': { icon: '🥫', cat: 'protein', kana: 'つなかん' },
-    'ツナ': { icon: '🐟', cat: 'protein', kana: 'つな' },
-    '豚肉': { icon: '🐷', cat: 'protein', kana: 'ぶたにく' },
-    '豚バラ': { icon: '🐷', cat: 'protein', kana: 'ぶたばら' },
-    '豚こま': { icon: '🐷', cat: 'protein', kana: 'ぶたこま' },
-    '豚ロース': { icon: '🐷', cat: 'protein', kana: 'ぶたろーす' },
-    '鶏肉': { icon: '🐔', cat: 'protein', kana: 'とりにく' },
-    '鶏むね肉': { icon: '🐔', cat: 'protein', kana: 'とりむねにく' },
-    '鶏もも肉': { icon: '🍗', cat: 'protein', kana: 'とりももにく' },
-    'ささみ': { icon: '🐔', cat: 'protein', kana: 'ささみ' },
-    '牛肉': { icon: '🐮', cat: 'protein', kana: 'ぎゅうにく' },
-    'ひき肉': { icon: '🥩', cat: 'protein', kana: 'ひきにく' },
-    '挽肉': { icon: '🥩', cat: 'protein', kana: 'ひきにく' },
-    '鮭': { icon: '🐟', cat: 'protein', kana: 'さけ' },
-    '生鮭': { icon: '🐟', cat: 'protein', kana: 'なまざけ' },
-    'サーモン': { icon: '🐟', cat: 'protein', kana: 'さーもん' },
-    'さば': { icon: '🐟', cat: 'protein', kana: 'さば' },
-    'サバ': { icon: '🐟', cat: 'protein', kana: 'さば' },
-    'あじ': { icon: '🐟', cat: 'protein', kana: 'あじ' },
-    'ぶり': { icon: '🐟', cat: 'protein', kana: 'ぶり' },
-    'たら': { icon: '🐟', cat: 'protein', kana: 'たら' },
-    'えび': { icon: '🦐', cat: 'protein', kana: 'えび' },
-    'エビ': { icon: '🦐', cat: 'protein', kana: 'えび' },
-    'いか': { icon: '🦑', cat: 'protein', kana: 'いか' },
-    'イカ': { icon: '🦑', cat: 'protein', kana: 'いか' },
-    'たこ': { icon: '🐙', cat: 'protein', kana: 'たこ' },
-    'タコ': { icon: '🐙', cat: 'protein', kana: 'たこ' },
-    '豆腐': { icon: '🧊', cat: 'protein', kana: 'とうふ' },
-    '絹豆腐': { icon: '🧊', cat: 'protein', kana: 'きぬどうふ' },
-    '木綿豆腐': { icon: '🧊', cat: 'protein', kana: 'もめんどうふ' },
-    '油揚げ': { icon: '🟫', cat: 'protein', kana: 'あぶらあげ' },
-    '厚揚げ': { icon: '🟫', cat: 'protein', kana: 'あつあげ' },
-    '牛乳': { icon: '🥛', cat: 'protein', kana: 'ぎゅうにゅう' },
-    'バター': { icon: '🧈', cat: 'protein', kana: 'ばたー' },
-    '卵': { icon: '🥚', cat: 'protein', kana: 'たまご' },
-    'たまご': { icon: '🥚', cat: 'protein', kana: 'たまご' },
+    // チルド室向き (肉・魚・練り物・納豆等)
+    'かまぼこ': { icon: '🍥', cat: 'protein', kana: 'かまぼこ', room: 'chilled', role: 'ready' },
+    'カマボコ': { icon: '🍥', cat: 'protein', kana: 'かまぼこ', room: 'chilled', role: 'ready' },
+    '蒲鉾': { icon: '🍥', cat: 'protein', kana: 'かまぼこ', room: 'chilled', role: 'ready' },
+    'なると': { icon: '🍥', cat: 'protein', kana: 'なると', room: 'chilled', role: 'ready' },
+    'はんぺん': { icon: '🍥', cat: 'protein', kana: 'はんぺん', room: 'chilled', role: 'ready' },
+    'ちくわ': { icon: '🍢', cat: 'protein', kana: 'ちくわ', room: 'chilled', role: 'ready' },
+    'さつま揚げ': { icon: '🍢', cat: 'protein', kana: 'さつまあげ', room: 'chilled', role: 'ready' },
+    'カニカマ': { icon: '🦀', cat: 'protein', kana: 'かにかま', room: 'chilled', role: 'ready' },
+    'かにかま': { icon: '🦀', cat: 'protein', kana: 'かにかま', room: 'chilled', role: 'ready' },
+    'ちりめんじゃこ': { icon: '🐟', cat: 'protein', kana: 'ちりめんじゃこ', room: 'chilled', role: 'ready' },
+    'しらす': { icon: '🐟', cat: 'protein', kana: 'しらす', room: 'chilled', role: 'ready' },
+    '納豆': { icon: '🫘', cat: 'protein', kana: 'なっとう', room: 'chilled', role: 'ready' },
+    'ベーコン': { icon: '🥓', cat: 'protein', kana: 'べーこん', room: 'chilled' },
+    'ハム': { icon: '🍖', cat: 'protein', kana: 'はむ', room: 'chilled' },
+    'ウインナー': { icon: '🌭', cat: 'protein', kana: 'ういんなー', room: 'chilled' },
+    'ソーセージ': { icon: '🌭', cat: 'protein', kana: 'そーせーじ', room: 'chilled' },
+    'ツナ缶': { icon: '🥫', cat: 'protein', kana: 'つなかん', room: 'chilled' },
+    'ツナ': { icon: '🐟', cat: 'protein', kana: 'つな', room: 'chilled' },
+    '豚肉': { icon: '🐷', cat: 'protein', kana: 'ぶたにく', room: 'chilled' },
+    '豚バラ': { icon: '🐷', cat: 'protein', kana: 'ぶたばら', room: 'chilled' },
+    '豚こま': { icon: '🐷', cat: 'protein', kana: 'ぶたこま', room: 'chilled' },
+    '豚ロース': { icon: '🐷', cat: 'protein', kana: 'ぶたろーす', room: 'chilled' },
+    '鶏肉': { icon: '🐔', cat: 'protein', kana: 'とりにく', room: 'chilled' },
+    '鶏むね肉': { icon: '🐔', cat: 'protein', kana: 'とりむねにく', room: 'chilled' },
+    '鶏もも肉': { icon: '🍗', cat: 'protein', kana: 'とりももにく', room: 'chilled' },
+    'ささみ': { icon: '🐔', cat: 'protein', kana: 'ささみ', room: 'chilled' },
+    '牛肉': { icon: '🐮', cat: 'protein', kana: 'ぎゅうにく', room: 'chilled' },
+    'ひき肉': { icon: '🥩', cat: 'protein', kana: 'ひきにく', room: 'chilled' },
+    '挽肉': { icon: '🥩', cat: 'protein', kana: 'ひきにく', room: 'chilled' },
+    '鮭': { icon: '🐟', cat: 'protein', kana: 'さけ', room: 'chilled' },
+    '生鮭': { icon: '🐟', cat: 'protein', kana: 'なまざけ', room: 'chilled' },
+    'サーモン': { icon: '🐟', cat: 'protein', kana: 'さーもん', room: 'chilled' },
+    'さば': { icon: '🐟', cat: 'protein', kana: 'さば', room: 'chilled' },
+    'サバ': { icon: '🐟', cat: 'protein', kana: 'さば', room: 'chilled' },
+    'あじ': { icon: '🐟', cat: 'protein', kana: 'あじ', room: 'chilled' },
+    'ぶり': { icon: '🐟', cat: 'protein', kana: 'ぶり', room: 'chilled' },
+    'たら': { icon: '🐟', cat: 'protein', kana: 'たら', room: 'chilled' },
+    'えび': { icon: '🦐', cat: 'protein', kana: 'えび', room: 'chilled' },
+    'エビ': { icon: '🦐', cat: 'protein', kana: 'えび', room: 'chilled' },
+    'いか': { icon: '🦑', cat: 'protein', kana: 'いか', room: 'chilled' },
+    'イカ': { icon: '🦑', cat: 'protein', kana: 'いか', room: 'chilled' },
+    'たこ': { icon: '🐙', cat: 'protein', kana: 'たこ', room: 'chilled' },
+    'タコ': { icon: '🐙', cat: 'protein', kana: 'たこ', room: 'chilled' },
 
-    // 野菜・きのこ・海藻
-    'キャベツ': { icon: '🥬', cat: 'vitamin', kana: 'きゃべつ' },
-    '白菜': { icon: '🥬', cat: 'vitamin', kana: 'はくさい' },
-    'レタス': { icon: '🥬', cat: 'vitamin', kana: 'れたす' },
-    'ほうれん草': { icon: '🥬', cat: 'vitamin', kana: 'ほうれんそう' },
-    '小松菜': { icon: '🥬', cat: 'vitamin', kana: 'こまつな' },
-    '水菜': { icon: '🥬', cat: 'vitamin', kana: 'みずな' },
-    'もやし': { icon: '🌱', cat: 'vitamin', kana: 'もやし' },
-    'ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'ねぎ' },
-    '長ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'ながねぎ' },
-    '玉ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'たまねぎ' },
-    'にんじん': { icon: '🥕', cat: 'vitamin', kana: 'にんじん' },
-    '人参': { icon: '🥕', cat: 'vitamin', kana: 'にんじん' },
-    '大根': { icon: '🤍', cat: 'vitamin', kana: 'だいこん' },
-    'トマト': { icon: '🍅', cat: 'vitamin', kana: 'とまと' },
-    'ミニトマト': { icon: '🍅', cat: 'vitamin', kana: 'みにとまと' },
-    'ブロッコリー': { icon: '🥦', cat: 'vitamin', kana: 'ぶろっこりー' },
-    'アスパラ': { icon: '🥦', cat: 'vitamin', kana: 'あすぱら' },
-    'きゅうり': { icon: '🥒', cat: 'vitamin', kana: 'きゅうり' },
-    'なす': { icon: '🍆', cat: 'vitamin', kana: 'なす' },
-    'ナス': { icon: '🍆', cat: 'vitamin', kana: 'なす' },
-    'ピーマン': { icon: '🫑', cat: 'vitamin', kana: 'ぴーまん' },
-    'パプリカ': { icon: '🫑', cat: 'vitamin', kana: 'ぱぷりか' },
-    'アボカド': { icon: '🥑', cat: 'vitamin', kana: 'あぼかど' },
-    'とうもろこし': { icon: '🌽', cat: 'vitamin', kana: 'とうもろこし' },
-    'コーン': { icon: '🌽', cat: 'vitamin', kana: 'こーん' },
-    'しめじ': { icon: '🍄', cat: 'vitamin', kana: 'しめじ' },
-    'えのき': { icon: '🍄', cat: 'vitamin', kana: 'えのき' },
-    'エリンギ': { icon: '🍄', cat: 'vitamin', kana: 'えりんぎ' },
-    'しいたけ': { icon: '🍄', cat: 'vitamin', kana: 'しいたけ' },
-    'まいたけ': { icon: '🍄', cat: 'vitamin', kana: 'まいたけ' },
-    'わかめ': { icon: '🌿', cat: 'vitamin', kana: 'わかめ' },
-    'ひじき': { icon: '🌿', cat: 'vitamin', kana: 'ひじき' },
+    // 冷蔵室向き (卵、乳製品、豆腐等)
+    '豆腐': { icon: '🧊', cat: 'protein', kana: 'とうふ', room: 'fridge', role: 'ready' },
+    '絹豆腐': { icon: '🧊', cat: 'protein', kana: 'きぬどうふ', room: 'fridge', role: 'ready' },
+    '木綿豆腐': { icon: '🧊', cat: 'protein', kana: 'もめんどうふ', room: 'fridge' },
+    '油揚げ': { icon: '🟫', cat: 'protein', kana: 'あぶらあげ', room: 'fridge' },
+    '厚揚げ': { icon: '🟫', cat: 'protein', kana: 'あつあげ', room: 'fridge' },
+    '牛乳': { icon: '🥛', cat: 'protein', kana: 'ぎゅうにゅう', room: 'fridge' },
+    'ヨーグルト': { icon: '🥛', cat: 'protein', kana: 'よーぐると', room: 'fridge', role: 'ready' },
+    'チーズ': { icon: '🧀', cat: 'protein', kana: 'ちーず', room: 'fridge', role: 'ready' },
+    'バター': { icon: '🧈', cat: 'protein', kana: 'ばたー', room: 'fridge' },
+    '卵': { icon: '🥚', cat: 'protein', kana: 'たまご', room: 'fridge' },
+    'たまご': { icon: '🥚', cat: 'protein', kana: 'たまご', room: 'fridge' },
 
-    // 主食・炭水化物・芋・かぼちゃ
-    'かぼちゃ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ' },
-    'カボチャ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ' },
-    'じゃがいも': { icon: '🥔', cat: 'carbo', kana: 'じゃがいも' },
-    'さつまいも': { icon: '🍠', cat: 'carbo', kana: 'さつまいも' },
-    '米': { icon: '🍚', cat: 'carbo', kana: 'こめ' },
-    'ごはん': { icon: '🍚', cat: 'carbo', kana: 'ごはん' },
-    'ご飯': { icon: '🍚', cat: 'carbo', kana: 'ごはん' },
-    '食パン': { icon: '🍞', cat: 'carbo', kana: 'しょくぱん' },
-    'パン': { icon: '🍞', cat: 'carbo', kana: 'ぱん' },
-    'うどん': { icon: '🍜', cat: 'carbo', kana: 'うどん' },
-    '中華麺': { icon: '🍜', cat: 'carbo', kana: 'ちゅうかめん' },
-    'ラーメン': { icon: '🍜', cat: 'carbo', kana: 'らーめん' },
-    'パスタ': { icon: '🍝', cat: 'carbo', kana: 'ぱすた' },
-    'そば': { icon: '🍜', cat: 'carbo', kana: 'そば' },
-    '餅': { icon: '🍡', cat: 'carbo', kana: 'もち' }
+    // 野菜室向き (野菜・きのこ・海藻・芋等)
+    'キャベツ': { icon: '🥬', cat: 'vitamin', kana: 'きゃべつ', room: 'veggie' },
+    '白菜': { icon: '🥬', cat: 'vitamin', kana: 'はくさい', room: 'veggie' },
+    'レタス': { icon: '🥬', cat: 'vitamin', kana: 'れたす', room: 'veggie' },
+    'ほうれん草': { icon: '🥬', cat: 'vitamin', kana: 'ほうれんそう', room: 'veggie' },
+    '小松菜': { icon: '🥬', cat: 'vitamin', kana: 'こまつな', room: 'veggie' },
+    '水菜': { icon: '🥬', cat: 'vitamin', kana: 'みずな', room: 'veggie' },
+    'もやし': { icon: '🌱', cat: 'vitamin', kana: 'もやし', room: 'veggie' },
+    'ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'ねぎ', room: 'veggie' },
+    '長ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'ながねぎ', room: 'veggie' },
+    '玉ねぎ': { icon: '🧅', cat: 'vitamin', kana: 'たまねぎ', room: 'veggie' },
+    'にんじん': { icon: '🥕', cat: 'vitamin', kana: 'にんじん', room: 'veggie' },
+    '人参': { icon: '🥕', cat: 'vitamin', kana: 'にんじん', room: 'veggie' },
+    '大根': { icon: '🤍', cat: 'vitamin', kana: 'だいこん', room: 'veggie' },
+    'トマト': { icon: '🍅', cat: 'vitamin', kana: 'とまと', room: 'veggie' },
+    'ミニトマト': { icon: '🍅', cat: 'vitamin', kana: 'みにとまと', room: 'veggie' },
+    'ブロッコリー': { icon: '🥦', cat: 'vitamin', kana: 'ぶろっこりー', room: 'veggie' },
+    'アスパラ': { icon: '🥦', cat: 'vitamin', kana: 'あすぱら', room: 'veggie' },
+    'きゅうり': { icon: '🥒', cat: 'vitamin', kana: 'きゅうり', room: 'veggie' },
+    'なす': { icon: '🍆', cat: 'vitamin', kana: 'なす', room: 'veggie' },
+    'ナス': { icon: '🍆', cat: 'vitamin', kana: 'なす', room: 'veggie' },
+    'ピーマン': { icon: '🫑', cat: 'vitamin', kana: 'ぴーまん', room: 'veggie' },
+    'パプリカ': { icon: '🫑', cat: 'vitamin', kana: 'ぱぷりか', room: 'veggie' },
+    'アボカド': { icon: '🥑', cat: 'vitamin', kana: 'あぼかど', room: 'veggie' },
+    'とうもろこし': { icon: '🌽', cat: 'vitamin', kana: 'とうもろこし', room: 'veggie' },
+    'コーン': { icon: '🌽', cat: 'vitamin', kana: 'こーん', room: 'veggie' },
+    'しめじ': { icon: '🍄', cat: 'vitamin', kana: 'しめじ', room: 'veggie' },
+    'えのき': { icon: '🍄', cat: 'vitamin', kana: 'えのき', room: 'veggie' },
+    'エリンギ': { icon: '🍄', cat: 'vitamin', kana: 'えりんぎ', room: 'veggie' },
+    'しいたけ': { icon: '🍄', cat: 'vitamin', kana: 'しいたけ', room: 'veggie' },
+    'まいたけ': { icon: '🍄', cat: 'vitamin', kana: 'まいたけ', room: 'veggie' },
+    'わかめ': { icon: '🌿', cat: 'vitamin', kana: 'わかめ', room: 'veggie' },
+    'ひじき': { icon: '🌿', cat: 'vitamin', kana: 'ひじき', room: 'veggie' },
+    'かぼちゃ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ', room: 'veggie' },
+    'カボチャ': { icon: '🎃', cat: 'carbo', kana: 'かぼちゃ', room: 'veggie' },
+    'じゃがいも': { icon: '🥔', cat: 'carbo', kana: 'じゃがいも', room: 'veggie' },
+    'さつまいも': { icon: '🍠', cat: 'carbo', kana: 'さつまいも', room: 'veggie' }
   };
 
   const initialIngredients = [
-    { id: '1', name: '鶏むね肉', kana: 'とりむねにく', cat: 'protein', icon: '🐔', selected: true },
-    { id: '2', name: '豚肉', kana: 'ぶたにく', cat: 'protein', icon: '🐷', selected: false },
-    { id: '3', name: '生鮭', kana: 'なまざけ', cat: 'protein', icon: '🐟', selected: false },
-    { id: '4', name: '卵', kana: 'たまご', cat: 'protein', icon: '🥚', selected: true },
-    { id: '5', name: '絹豆腐', kana: 'きぬどうふ', cat: 'protein', icon: '🧊', selected: false },
-    { id: '6', name: 'ブロッコリー', kana: 'ぶろっこりー', cat: 'vitamin', icon: '🥦', selected: true },
-    { id: '7', name: 'ほうれん草', kana: 'ほうれんそう', cat: 'vitamin', icon: '🥬', selected: false },
-    { id: '8', name: 'にんじん', kana: 'にんじん', cat: 'vitamin', icon: '🥕', selected: true },
-    { id: '9', name: '玉ねぎ', kana: 'たまねぎ', cat: 'vitamin', icon: '🧅', selected: false },
-    { id: '10', name: 'じゃがいも', kana: 'じゃがいも', cat: 'carbo', icon: '🥔', selected: false }
+    { id: '1', name: '鶏むね肉', kana: 'とりむねにく', cat: 'protein', room: 'chilled', icon: '🐔', selected: true },
+    { id: '2', name: '豚肉', kana: 'ぶたにく', cat: 'protein', room: 'chilled', icon: '🐷', selected: false },
+    { id: '3', name: '生鮭', kana: 'なまざけ', cat: 'protein', room: 'chilled', icon: '🐟', selected: false },
+    { id: '4', name: '卵', kana: 'たまご', cat: 'protein', room: 'fridge', icon: '🥚', selected: true },
+    { id: '5', name: '絹豆腐', kana: 'きぬどうふ', cat: 'protein', room: 'fridge', icon: '🧊', selected: false },
+    { id: '6', name: 'ブロッコリー', kana: 'ぶろっこりー', cat: 'vitamin', room: 'veggie', icon: '🥦', selected: true },
+    { id: '7', name: 'ほうれん草', kana: 'ほうれんそう', cat: 'vitamin', room: 'veggie', icon: '🥬', selected: false },
+    { id: '8', name: 'にんじん', kana: 'にんじん', cat: 'vitamin', room: 'veggie', icon: '🥕', selected: true },
+    { id: '9', name: '玉ねぎ', kana: 'たまねぎ', cat: 'vitamin', room: 'veggie', icon: '🧅', selected: false },
+    { id: '10', name: 'じゃがいも', kana: 'じゃがいも', cat: 'carbo', room: 'veggie', icon: '🥔', selected: false }
   ];
 
-  // 検証済み・料理と100%一致する画像URL一覧
-  const IMG = {
-    teriyaki: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80',
-    simmered: 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=800&q=80',
-    steamed:  'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80',
-    fried:    'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=80',
-    stirfry:  'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80',
-    saute:    'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
-    tomato:   'https://images.unsplash.com/photo-1534939561126-855b8675edd7?auto=format&fit=crop&w=800&q=80',
-    foil:     'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
-    fritter:  'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=800&q=80',
-    chinese:  'https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=800&q=80',
-    ankake:   'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=800&q=80',
-    salad1:   'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80',
-    salad2:   'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
-    miso:     'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=800&q=80',
-    consomme: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80',
-    eggsoup:  'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?auto=format&fit=crop&w=800&q=80',
-    fruit:    'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=800&q=80'
+  // カテゴリ・調理法別の複数画像プール（再生成のたびに異なる写真を表示するため）
+  const IMAGE_POOLS = {
+    main_grill: [
+      'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80'
+    ],
+    main_simmer: [
+      'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1534939561126-855b8675edd7?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1604908177453-7462950a6a3b?auto=format&fit=crop&w=800&q=80'
+    ],
+    main_steam: [
+      'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=800&q=80'
+    ],
+    main_fry: [
+      'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=800&q=80'
+    ],
+    main_stirfry: [
+      'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=800&q=80'
+    ],
+    staple_noodle: [
+      'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?auto=format&fit=crop&w=800&q=80'
+    ],
+    staple_rice: [
+      'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=800&q=80'
+    ],
+    staple_pasta: [
+      'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=800&q=80'
+    ],
+    staple_bread: [
+      'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=800&q=80'
+    ],
+    sub_veg: [
+      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1607532941433-304659e8198a?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=800&q=80'
+    ],
+    soup: [
+      'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1588566565463-180a5b2090d2?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1604152135912-04a022e23696?auto=format&fit=crop&w=800&q=80'
+    ],
+    fruit: [
+      'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&w=800&q=80'
+    ]
+  };
+
+  let lastUsedImages = {};
+
+  function pickFreshImage(poolKey) {
+    const pool = IMAGE_POOLS[poolKey] || IMAGE_POOLS.main_grill;
+    if (pool.length <= 1) return pool[0];
+    const prev = lastUsedImages[poolKey];
+    const candidates = pool.filter(url => url !== prev);
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    lastUsedImages[poolKey] = chosen;
+    return chosen;
+  }
+
+  // ガスト式・主食ディッシュレシピ（麺類・ご飯もの・パスタ・パン）
+  const stapleRecipes = {
+    noodle: [
+      {
+        method: '🍜 炒める・焼く',
+        imgKey: 'staple_noodle',
+        title: (ing) => `${ing}の屋台風ソース焼きそば・焼きうどん`,
+        step: '1. 具材を一口大に切ってフライパンで炒め、麺と少量の水を加えてほぐします。<br>2. お好みのソース（または醤油・だし）を絡めて香ばしく焼き上げます。'
+      },
+      {
+        method: '🍜 煮る・汁麺',
+        imgKey: 'staple_noodle',
+        title: (ing) => `${ing}の具だくさん特製スープ麺`,
+        step: '1. 鍋に水とスープベース（鶏ガラ・和風だし・味噌など）を沸かし、具材を煮込みます。<br>2. 茹でた麺と合わせて器に盛り、お好みでごま油や七味を添えます。'
+      }
+    ],
+    rice: [
+      {
+        method: '🍳 炒める',
+        imgKey: 'staple_rice',
+        title: (ing) => `${ing}のパラッと香ばし特製チャーハン`,
+        step: '1. 細かく刻んだ具材をフライパンで炒め、ご飯を加えて強火でほぐしながら炒め合わせます。<br>2. 鶏ガラスープの素・塩コショウ・鍋肌の醤油で香ばしく仕上げます。'
+      },
+      {
+        method: '🍲 煮る・丼もの',
+        imgKey: 'staple_rice',
+        title: (ing) => `${ing}の甘辛とろ〜り特製どんぶり`,
+        step: '1. フライパンにだし汁・醤油・みりん・砂糖を煮立たせ、具材に火を通します。<br>2. 温かいご飯の上にたっぷり盛り付け、お好みで卵や刻みねぎをのせます。'
+      }
+    ],
+    pasta: [
+      {
+        method: '🍝 炒める・絡める',
+        imgKey: 'staple_pasta',
+        title: (ing) => `${ing}のガーリックオイル・和風パスタ`,
+        step: '1. パスタを茹でている間に、フライパンでニンニクと具材をオリーブオイルで炒めます。<br>2. 茹で汁少々とパスタを加え、塩コショウや醤油・バターで乳化させながら絡めます。'
+      },
+      {
+        method: '🍝 煮込む',
+        imgKey: 'staple_pasta',
+        title: (ing) => `${ing}の濃厚トマト・クリームパスタ`,
+        step: '1. 具材を炒めてからトマトソース（または牛乳・コンソメ）を加えて軽く煮詰めます。<br>2. 茹で上がったパスタを投入してソースをしっかり絡めて完成です。'
+      }
+    ],
+    bread: [
+      {
+        method: '🔥 焼く・トースト',
+        imgKey: 'staple_bread',
+        title: (ing) => `${ing}のこんがりオープンサンド・ピザトースト`,
+        step: '1. 食べやすく切った具材（加熱が必要なものは軽く炒める）をパンの上にのせます。<br>2. トースターでこんがり焼き色がつくまで焼き上げ、黒コショウをふります。'
+      }
+    ]
   };
 
   const recipeDatabase = {
     '和食': {
-      badgeTitle: '【和食御膳】',
-      subText: 'ほっと落ち着く和風バランスコース',
+      badgeTitle: '【和食・一汁三菜】',
+      subText: '主菜・副菜・副々菜・汁物が揃う和風バランス御膳',
       mains: [
         {
           method: '🔥 焼く',
+          imgKey: 'main_grill',
           title: (ing) => `${ing}の香ばし照り焼き`,
-          img: IMG.teriyaki,
           step: '1. 食材を食べやすい大きさに切り、片栗粉を薄くまぶします。<br>2. フライパンで両面をこんがり焼き、醤油・みりん・砂糖（各大さじ1）を絡めて照りよく仕上げます。'
         },
         {
           method: '🍲 煮る',
+          imgKey: 'main_simmer',
           title: (ing) => `${ing}のほっこり甘辛うま煮`,
-          img: IMG.simmered,
           step: '1. 鍋にだし汁・醤油・みりん・酒を入れて煮立たせます。<br>2. 食べやすく切った食材を加え、落し蓋をして中火で10分ほど味が染みるまで煮込みます。'
         },
         {
           method: '♨️ 蒸す・レンジ',
+          imgKey: 'main_steam',
           title: (ing) => `${ing}のふっくら酒蒸し・ポン酢がけ`,
-          img: IMG.steamed,
           step: '1. 耐熱皿に食材を並べ、酒大さじ1と塩少々をふってふんわりラップをします。<br>2. 電子レンジ（600W）で4〜5分加熱し、ポン酢と刻みねぎをかけて完成です。'
         },
         {
           method: '🍤 揚げる・揚げ焼き',
+          imgKey: 'main_fry',
           title: (ing) => `${ing}のサクッと和風竜田揚げ`,
-          img: IMG.fried,
           step: '1. 食材に醤油・おろし生姜・酒で下味をつけ、片栗粉をしっかりまぶします。<br>2. フライパンに多めの油を熱し、カリッと黄金色になるまで揚げ焼きにします。'
         },
         {
           method: '🍳 炒める',
+          imgKey: 'main_stirfry',
           title: (ing) => `${ing}のコク旨生姜焼き炒め`,
-          img: IMG.stirfry,
           step: '1. フライパンに油を熱し、一口大に切った食材を中火で炒めます。<br>2. 火が通ったら醤油・みりん・おろし生姜を回しかけ、強火でサッと炒め合わせます。'
         }
       ],
       subs: [
         {
           method: '🥗 和える',
+          imgKey: 'sub_veg',
           title: (ing) => `${ing}のさっぱりおかか和え`,
-          img: IMG.salad1,
-          step: '1. 野菜をサッと茹でるかレンジで加熱し、水気をしっかり絞ります。<br>2. 醤油小さじ1・めんつゆ小さじ1・かつお節を加えて全体を和えます。'
+          step: '1. 食材をサッと茹でるかレンジで加熱し、水気をしっかり切ります。<br>2. 醤油小さじ1・めんつゆ小さじ1・かつお節を加えて全体を和えます。'
         },
         {
           method: '🥗 和える',
+          imgKey: 'sub_veg',
           title: (ing) => `${ing}の香ばし胡麻和え`,
-          img: IMG.salad2,
-          step: '1. 食べやすく切った野菜を下茹でして冷まし、水気を切ります。<br>2. すりごま大さじ1・砂糖小さじ1・醤油小さじ2を混ぜた衣で和えます。'
+          step: '1. 食べやすく切った食材を下茹でして冷まし、水気を切ります。<br>2. すりごま大さじ1・砂糖小さじ1・醤油小さじ2を混ぜた衣で和えます。'
+        }
+      ],
+      sub2s: [
+        {
+          method: '🥢 小鉢・和える',
+          imgKey: 'sub_veg',
+          title: (ing) => `${ing}のさっぱり和風小鉢`,
+          step: '1. 食べやすい大きさに整えて器に盛り付けます。<br>2. だし醤油・ポン酢・ごま油などお好みの薬味を添えて箸休めの一品に。'
+        },
+        {
+          method: '🥢 小鉢・漬物風',
+          imgKey: 'sub_veg',
+          title: (ing) => `${ing}の浅漬け・梅おかか和え`,
+          step: '1. 食べやすく切った食材に塩少々（または白だし）を揉み込みます。<br>2. 仕上げにかつお節やいりごまをふってさっぱり仕上げます。'
         }
       ],
       soups: [
         {
           method: '🍲 煮る',
+          imgKey: 'soup',
           title: (ing) => `${ing}のほっこり手作りお味噌汁`,
-          img: IMG.miso,
           step: '1. 鍋に水とだしを入れて火にかけ、食べやすく切った具材を柔らかく煮ます。<br>2. 一旦火を止めて味噌を溶き入れ、沸騰直前まで温めて完成です。'
         }
       ]
     },
     '洋食': {
-      badgeTitle: '【洋食ディナー】',
-      subText: '香ばしい香りが広がる洋風バランスコース',
+      badgeTitle: '【洋食セット】',
+      subText: 'ガスト式バランス・メイン＋さっぱりサラダ＋スープ',
       mains: [
         {
           method: '🔥 焼く',
+          imgKey: 'main_grill',
           title: (ing) => `${ing}のガーリックハーブソテー`,
-          img: IMG.saute,
           step: '1. 食材に塩・黒コショウをふり、オリーブオイルと潰したニンニクを熱したフライパンへ。<br>2. 両面を香ばしく焼き上げ、仕上げにバターを落として風味を絡めます。'
         },
         {
           method: '🍲 煮る',
+          imgKey: 'main_simmer',
           title: (ing) => `${ing}の濃厚トマト煮込み`,
-          img: IMG.tomato,
           step: '1. 鍋にオリーブオイルを熱し、一口大に切った食材を軽く炒めます。<br>2. トマト缶（またはケチャップ大さじ3＋水150ml）とコンソメを加え、10分煮込みます。'
         },
         {
           method: '♨️ 蒸す・レンジ',
+          imgKey: 'main_steam',
           title: (ing) => `${ing}のレモンバターホイル蒸し`,
-          img: IMG.foil,
           step: '1. アルミホイルに食材をのせ、塩コショウ・白ワイン（または酒）・バターをのせて包みます。<br>2. フライパン（またはトースター）で8分ほど蒸し焼きにし、レモンを絞ります。'
         },
         {
           method: '🍤 揚げる・揚げ焼き',
+          imgKey: 'main_fry',
           title: (ing) => `${ing}のカリッと黄金フリット`,
-          img: IMG.fritter,
           step: '1. 小麦粉・片栗粉・水・塩少々を混ぜた衣に食材をくぐらせます。<br>2. 170℃の油でサクッと軽やかな食感になるまで揚げ焼きにします。'
         },
         {
           method: '🍳 炒める',
+          imgKey: 'main_stirfry',
           title: (ing) => `${ing}のバター醤油ペッパー炒め`,
-          img: IMG.stirfry,
           step: '1. フライパンにバターを溶かし、食べやすく切った食材を中火で炒めます。<br>2. 醤油小さじ2を鍋肌から回し入れ、粗挽き黒コショウをたっぷりふって仕上げます。'
         }
       ],
       subs: [
         {
           method: '🥗 和える',
+          imgKey: 'sub_veg',
           title: (ing) => `${ing}のイタリアンフレッシュサラダ`,
-          img: IMG.salad1,
-          step: '1. 野菜を一口大にカットし、冷水でシャキッとさせて水気を切ります。<br>2. オリーブオイル・酢（またはレモン汁）・塩コショウでさっぱり和えます。'
+          step: '1. 食材を一口大にカットし、水気を切ります。<br>2. オリーブオイル・酢（またはレモン汁）・塩コショウでさっぱり和えます。'
         },
         {
           method: '🥗 和える',
+          imgKey: 'sub_veg',
           title: (ing) => `${ing}のハーブマリネ`,
-          img: IMG.salad2,
-          step: '1. 食べやすく切った野菜を軽く塩もみ（またはサッと加熱）します。<br>2. オリーブオイル・かんたん酢・黒コショウで和えて味を馴染ませます。'
+          step: '1. 食べやすく切った食材を軽く塩もみ（またはサッと加熱）します。<br>2. オリーブオイル・かんたん酢・黒コショウで和えて味を馴染ませます。'
         }
       ],
       soups: [
         {
           method: '🍲 煮る',
+          imgKey: 'soup',
           title: (ing) => `${ing}の具だくさんコンソメスープ`,
-          img: IMG.consomme,
           step: '1. 鍋に水300mlとコンソメキューブ1個、小さく切った具材を入れて煮込みます。<br>2. 具材が柔らかくなったら塩コショウで味を整えて完成です。'
         }
       ]
     },
     '中華': {
-      badgeTitle: '【本格中華】',
-      subText: '食欲そそるスピード中華コース',
+      badgeTitle: '【中華セット】',
+      subText: 'ガスト式バランス・メイン＋さっぱり中華副菜＋スープ',
       mains: [
         {
           method: '🍳 炒める',
+          imgKey: 'main_stirfry',
           title: (ing) => `${ing}の旨味凝縮！強火中華炒め`,
-          img: IMG.chinese,
           step: '1. フライパンにごま油・おろしニンニク・生姜を熱し、香りを立たせます。<br>2. 食材を強火で手早く炒め、鶏ガラスープの素・オイスターソース・醤油で味付けします。'
         },
         {
           method: '🍲 煮る',
+          imgKey: 'main_simmer',
           title: (ing) => `${ing}のとろ〜り中華うま煮あんかけ`,
-          img: IMG.ankake,
           step: '1. 食材をサッと炒めてから、水150ml・鶏ガラスープの素・醤油・酒を加えて煮込みます。<br>2. 水溶き片栗粉を回し入れ、全体にとろみがついたらごま油を垂らします。'
         },
         {
           method: '♨️ 蒸す・レンジ',
+          imgKey: 'main_steam',
           title: (ing) => `${ing}のレンジ蒸し・ねぎ塩だれ`,
-          img: IMG.steamed,
           step: '1. 耐熱皿に食材を並べて酒をふり、ラップをしてレンジ（600W）で4〜5分蒸します。<br>2. 刻みねぎ・ごま油・鶏ガラスープの素・レモン汁を混ぜたたれをたっぷりかけます。'
         },
         {
           method: '🍤 揚げる・揚げ焼き',
+          imgKey: 'main_fry',
           title: (ing) => `${ing}のカリッと油淋鶏（ユーリンチー）風`,
-          img: IMG.fried,
           step: '1. 片栗粉をまぶした食材を多めの油でカリッと揚げ焼きにします。<br>2. 刻みねぎ・醤油・酢・砂糖・ごま油を合わせた香味だれを上からかけて完成です。'
         },
         {
           method: '🔥 焼く',
+          imgKey: 'main_grill',
           title: (ing) => `${ing}のピリ辛甜麺醤（甘味噌）焼き`,
-          img: IMG.teriyaki,
           step: '1. フライパンにごま油を熱し、食材にこんがり焼き色がつくまで焼きます。<br>2. 味噌・砂糖・醤油・豆板醤少々を合わせた特製ダレを絡めて香ばしく焼き上げます。'
         }
       ],
       subs: [
         {
           method: '🥗 和える',
+          imgKey: 'sub_veg',
           title: (ing) => `${ing}のやみつき中華ナムル`,
-          img: IMG.salad1,
-          step: '1. 野菜を細切りにしてレンジで加熱（または下茹で）し、水気を切ります。<br>2. ごま油小さじ2・鶏ガラスープの素小さじ1・いりごまで和えます。'
+          step: '1. 食材を細切りにしてレンジで加熱（または下茹で）し、水気を切ります。<br>2. ごま油小さじ2・鶏ガラスープの素小さじ1・いりごまで和えます。'
         },
         {
           method: '🥗 和える',
+          imgKey: 'sub_veg',
           title: (ing) => `${ing}のピリッと中華風甘酢和え`,
-          img: IMG.salad2,
-          step: '1. 食べやすく切った野菜に塩少々をふって水気を絞ります。<br>2. 酢・醤油・砂糖・ごま油を混ぜた中華ドレッシングでサッと和えます。'
+          step: '1. 食べやすく切った食材に塩少々をふって水気を絞ります。<br>2. 酢・醤油・砂糖・ごま油を混ぜた中華ドレッシングでサッと和えます。'
         }
       ],
       soups: [
         {
           method: '🍲 煮る',
+          imgKey: 'soup',
           title: (ing) => `${ing}とふんわり卵の中華スープ`,
-          img: IMG.eggsoup,
           step: '1. 鍋に水300mlと鶏ガラスープの素・具材を入れて煮立たせます。<br>2. 溶き卵を細く回し入れてふんわり固まったら、ごま油と黒コショウをふります。'
         }
       ]
@@ -1024,7 +1171,7 @@
   let userXP = 240;
   let userMaxXP = 500;
   let userLvl = 3;
-  let currentFilter = 'all';
+  let currentRoom = 'all';
   let chartInstance = null;
   let lastComboKey = '';
 
@@ -1037,9 +1184,13 @@
           const info = ingredientDB[item.name];
           if (info) {
             item.kana = info.kana;
+            if (!item.room) item.room = info.room || 'fridge';
             if (item.name !== 'ブロッコリー' && item.icon === '🥦') {
               item.icon = info.icon;
             }
+          } else {
+            if (!item.room) item.room = 'fridge';
+            if (!item.kana) item.kana = item.name;
           }
         });
         saveData();
@@ -1055,6 +1206,15 @@
     const savedLvl = localStorage.getItem('fridge_quest_lvl');
     if (savedLvl !== null) userLvl = parseInt(savedLvl, 10) || 3;
     updateXPUI();
+
+    const savedRecipeHtml = localStorage.getItem('fridge_quest_last_recipe_html');
+    if (savedRecipeHtml) {
+      document.getElementById('recipeCardsContainer').innerHTML = savedRecipeHtml;
+      const savedTitle = localStorage.getItem('fridge_quest_last_recipe_title');
+      const savedSub = localStorage.getItem('fridge_quest_last_recipe_sub');
+      if (savedTitle) document.getElementById('genreTitle').innerText = savedTitle;
+      if (savedSub) document.getElementById('genreSub').innerText = savedSub;
+    }
   }
 
   function saveData() {
@@ -1075,8 +1235,8 @@
     });
 
     const filtered = defaultIngredients.filter(item => {
-      if (currentFilter === 'all') return true;
-      return item.cat === currentFilter;
+      if (currentRoom === 'all') return true;
+      return item.room === currentRoom;
     });
 
     filtered.forEach(item => {
@@ -1095,7 +1255,7 @@
       card.innerHTML = `
         <div class="ing-icon">${item.icon}</div>
         <div class="ing-name">${item.name}</div>
-        <div class="ing-cat">${getCatLabel(item.cat)}</div>
+        <div class="ing-cat">${getRoomLabel(item.room)}</div>
       `;
       card.appendChild(delBtn);
       grid.appendChild(card);
@@ -1103,17 +1263,17 @@
     updateChart();
   }
 
-  function filterCat(cat, btn) {
-    currentFilter = cat;
+  function filterRoom(room, btn) {
+    currentRoom = room;
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
     renderGrid();
   }
 
-  function getCatLabel(cat) {
-    if(cat==='protein') return 'タンパク質';
-    if(cat==='vitamin') return 'ビタミン';
-    return '炭水化物';
+  function getRoomLabel(room) {
+    if(room==='chilled') return '❄️ チルド室';
+    if(room==='fridge') return '🥛 冷蔵室';
+    return '🥬 野菜室';
   }
 
   function toggleSelect(id) {
@@ -1134,7 +1294,7 @@
   function openAddModal() {
     document.getElementById('foodNameInput').value = '';
     document.getElementById('foodEmojiInput').value = '🥗';
-    document.getElementById('foodCatSelect').value = 'vitamin';
+    document.getElementById('foodRoomSelect').value = 'chilled';
     document.getElementById('addModal').style.display = 'flex';
   }
 
@@ -1150,53 +1310,46 @@
       .find(k => trimmed === k || trimmed.includes(k) || k.includes(trimmed));
 
     const emojiInput = document.getElementById('foodEmojiInput');
-    const catSelect = document.getElementById('foodCatSelect');
+    const roomSelect = document.getElementById('foodRoomSelect');
 
     if (matchedKey && ingredientDB[matchedKey]) {
       emojiInput.value = ingredientDB[matchedKey].icon;
-      catSelect.value = ingredientDB[matchedKey].cat;
+      roomSelect.value = ingredientDB[matchedKey].room;
       return;
     }
 
-    if (/(かぼちゃ|カボチャ|南瓜|芋|いも|ポテト|米|飯|パン|麺|パスタ|うどん|そば|餅)/.test(trimmed)) {
-      catSelect.value = 'carbo';
+    if (/(かぼちゃ|カボチャ|南瓜|芋|いも|ポテト|米|飯|パン|麺|パスタ|うどん|そば|餅|キャベツ|白菜|レタス|ほうれん草|小松菜|もやし|ねぎ|玉ねぎ|にんじん|人参|大根|トマト|ブロッコリー|きゅうり|なす|ナス|ピーマン|しめじ|えのき|しいたけ|わかめ|りんご|リンゴ|林檎|みかん|バナナ|いちご)/.test(trimmed)) {
+      roomSelect.value = 'veggie';
       if (/(かぼちゃ|カボチャ)/.test(trimmed)) emojiInput.value = '🎃';
       else if (/(パン)/.test(trimmed)) emojiInput.value = '🍞';
+      else if (/(パスタ|スパゲッティ)/.test(trimmed)) emojiInput.value = '🍝';
       else if (/(麺|うどん|そば|ラーメン)/.test(trimmed)) emojiInput.value = '🍜';
-      else emojiInput.value = '🍚';
-    } else if (/(豚|ポーク)/.test(trimmed)) {
-      catSelect.value = 'protein';
-      emojiInput.value = '🐷';
-    } else if (/(鶏|チキン|ささみ)/.test(trimmed)) {
-      catSelect.value = 'protein';
-      emojiInput.value = '🐔';
-    } else if (/(牛|ビーフ)/.test(trimmed)) {
-      catSelect.value = 'protein';
-      emojiInput.value = '🐮';
-    } else if (/(ハム|ベーコン|ソーセージ|ウインナー)/.test(trimmed)) {
-      catSelect.value = 'protein';
-      emojiInput.value = '🥓';
-    } else if (/(魚|鮭|サバ|マグロ|ツナ|エビ|イカ|タコ|ちくわ|かまぼこ)/.test(trimmed)) {
-      catSelect.value = 'protein';
-      emojiInput.value = '🐟';
-    } else if (/(牛乳|豆腐|納豆|卵|肉|チーズ|ヨーグルト)/.test(trimmed)) {
-      catSelect.value = 'protein';
-      emojiInput.value = '🥩';
-    } else if (/(りんご|リンゴ|林檎)/.test(trimmed)) {
-      catSelect.value = 'vitamin';
-      emojiInput.value = '🍎';
-    } else if (/(みかん|オレンジ)/.test(trimmed)) {
-      catSelect.value = 'vitamin';
-      emojiInput.value = '🍊';
-    } else if (/(バナナ)/.test(trimmed)) {
-      catSelect.value = 'vitamin';
-      emojiInput.value = '🍌';
-    } else if (/(いちご|イチゴ)/.test(trimmed)) {
-      catSelect.value = 'vitamin';
-      emojiInput.value = '🍓';
+      else if (/(米|ご飯|ごはん)/.test(trimmed)) emojiInput.value = '🍚';
+      else if (/(りんご|リンゴ|林檎)/.test(trimmed)) emojiInput.value = '🍎';
+      else if (/(みかん|オレンジ)/.test(trimmed)) emojiInput.value = '🍊';
+      else if (/(バナナ)/.test(trimmed)) emojiInput.value = '🍌';
+      else if (/(いちご|イチゴ)/.test(trimmed)) emojiInput.value = '🍓';
+      else emojiInput.value = '🥦';
+    } else if (/(豆腐|牛乳|卵|たまご|チーズ|ヨーグルト|バター|油揚げ|厚揚げ)/.test(trimmed)) {
+      roomSelect.value = 'fridge';
+      if (/(卵|たまご)/.test(trimmed)) emojiInput.value = '🥚';
+      else if (/(牛乳|ヨーグルト)/.test(trimmed)) emojiInput.value = '🥛';
+      else if (/(チーズ)/.test(trimmed)) emojiInput.value = '🧀';
+      else if (/(バター)/.test(trimmed)) emojiInput.value = '🧈';
+      else emojiInput.value = '🧊';
     } else {
-      catSelect.value = 'vitamin';
-      emojiInput.value = '🥗';
+      roomSelect.value = 'chilled';
+      if (/(豚)/.test(trimmed)) emojiInput.value = '🐷';
+      else if (/(鶏|ささみ)/.test(trimmed)) emojiInput.value = '🐔';
+      else if (/(牛)/.test(trimmed)) emojiInput.value = '🐮';
+      else if (/(ハム|ベーコン|ソーセージ)/.test(trimmed)) emojiInput.value = '🥓';
+      else if (/(魚|鮭|サバ|ツナ|エビ|イカ|タコ|ちくわ|かまぼこ|納豆)/.test(trimmed)) {
+        if (/(納豆)/.test(trimmed)) emojiInput.value = '🫘';
+        else if (/(かまぼこ|ちくわ)/.test(trimmed)) emojiInput.value = '🍥';
+        else emojiInput.value = '🐟';
+      } else {
+        emojiInput.value = '🥩';
+      }
     }
   }
 
@@ -1205,15 +1358,26 @@
     autoDetectAll(nameInput.value);
     const name = nameInput.value.trim();
     const icon = document.getElementById('foodEmojiInput').value.trim() || '🥗';
-    const cat = document.getElementById('foodCatSelect').value;
+    const room = document.getElementById('foodRoomSelect').value;
     if(!name) return;
 
     const matched = Object.keys(ingredientDB).find(k => k === name || name.includes(k));
     const kana = (matched && ingredientDB[matched].kana) ? ingredientDB[matched].kana : name;
+    let cat = 'vitamin';
+    if (matched && ingredientDB[matched].cat) {
+      cat = ingredientDB[matched].cat;
+    } else {
+      if (room === 'chilled') cat = 'protein';
+      else if (room === 'fridge') cat = 'protein';
+      else {
+        if (/(かぼちゃ|芋|米|飯|パン|麺|パスタ|うどん|そば|餅)/.test(name)) cat = 'carbo';
+        else cat = 'vitamin';
+      }
+    }
 
     defaultIngredients.push({
       id: Date.now().toString(),
-      name, kana, icon, cat, selected: true
+      name, kana, icon, cat, room, selected: true
     });
     saveData();
     nameInput.value = '';
@@ -1268,8 +1432,8 @@
     }
     let p = 15, f = 15, c = 15, v = 15, fib = 15;
     selected.forEach(s => {
-      if(s.cat === 'protein') { p += 25; f += 15; }
-      if(s.cat === 'vitamin') { v += 30; fib += 25; }
+      if(s.cat === 'protein' || s.room === 'chilled') { p += 25; f += 15; }
+      if(s.cat === 'vitamin' || s.room === 'veggie') { v += 30; fib += 25; }
       if(s.cat === 'carbo') { c += 35; f += 5; }
     });
     chartInstance.data.datasets[0].data = [Math.min(p, 100), Math.min(f, 100), Math.min(c, 100), Math.min(v, 100), Math.min(fib, 100)];
@@ -1309,7 +1473,15 @@
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  // 料理の常識（相性ルール）判定ヘルパー
+  function shuffleArray(arr) {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
   function getIngredientRole(item) {
     if (item.role) return item.role;
     const dbInfo = ingredientDB[item.name];
@@ -1317,8 +1489,20 @@
     if (/(りんご|リンゴ|林檎|みかん|オレンジ|バナナ|いちご|イチゴ|ぶどう|キウイ|もも|梨|メロン|スイカ)/.test(item.name)) {
       return 'fruit';
     }
-    if (/(納豆|かまぼこ|カマボコ|ちくわ|カニカマ|しらす|じゃこ|ヨーグルト)/.test(item.name)) {
+    if (/(納豆|かまぼこ|カマボコ|ちくわ|カニカマ|しらす|じゃこ|ヨーグルト|チーズ|絹豆腐)/.test(item.name)) {
       return 'ready';
+    }
+    if (/(うどん|中華麺|ラーメン|焼きそば|そば)/.test(item.name)) {
+      return 'staple_noodle';
+    }
+    if (/(パスタ|スパゲッティ)/.test(item.name)) {
+      return 'staple_pasta';
+    }
+    if (/(米|ご飯|ごはん|餅)/.test(item.name)) {
+      return 'staple_rice';
+    }
+    if (/(パン)/.test(item.name)) {
+      return 'staple_bread';
     }
     return 'normal';
   }
@@ -1326,64 +1510,188 @@
   function generateMenu() {
     const selected = defaultIngredients.filter(i => i.selected);
 
-    // 1. 相性ルールに基づき「果物」「そのまま/小鉢向き食材」「通常調理食材」に自動仕分け
-    const fruits = selected.filter(i => getIngredientRole(i) === 'fruit');
-    const readyItems = selected.filter(i => getIngredientRole(i) === 'ready');
+    const fruits = shuffleArray(selected.filter(i => getIngredientRole(i) === 'fruit'));
+    const readyItems = shuffleArray(selected.filter(i => getIngredientRole(i) === 'ready'));
+    const noodles = shuffleArray(selected.filter(i => getIngredientRole(i) === 'staple_noodle'));
+    const pastas = shuffleArray(selected.filter(i => getIngredientRole(i) === 'staple_pasta'));
+    const rices = shuffleArray(selected.filter(i => getIngredientRole(i) === 'staple_rice'));
+    const breads = shuffleArray(selected.filter(i => getIngredientRole(i) === 'staple_bread'));
     const normalSelected = selected.filter(i => getIngredientRole(i) === 'normal');
 
-    const cookProteins = normalSelected.filter(i => i.cat === 'protein');
-    const cookVitamins = normalSelected.filter(i => i.cat === 'vitamin');
-    const cookCarbos = normalSelected.filter(i => i.cat === 'carbo');
+    const cookProteins = shuffleArray(normalSelected.filter(i => i.cat === 'protein' || i.room === 'chilled'));
+    const cookVitamins = shuffleArray(normalSelected.filter(i => i.cat === 'vitamin' || i.room === 'veggie'));
+    const cookTubers = shuffleArray(normalSelected.filter(i => i.cat === 'carbo'));
+
+    let stapleType = null;
+    let stapleItem = null;
+    if (noodles.length > 0) { stapleType = 'noodle'; stapleItem = noodles[0]; }
+    else if (pastas.length > 0) { stapleType = 'pasta'; stapleItem = pastas[0]; }
+    else if (rices.length > 0) { stapleType = 'rice'; stapleItem = rices[0]; }
+    else if (breads.length > 0) { stapleType = 'bread'; stapleItem = breads[0]; }
 
     const genres = ['和食', '洋食', '中華'];
     let chosenGenre = pickRandom(genres);
-    let genreData = recipeDatabase[chosenGenre];
-    let mainRecipe = pickRandom(genreData.mains);
+    if (stapleType === 'pasta' || stapleType === 'bread') chosenGenre = '洋食';
 
-    let comboKey = `${chosenGenre}-${mainRecipe.method}`;
+    let genreData = recipeDatabase[chosenGenre];
+    let mainRecipe = stapleType ? pickRandom(stapleRecipes[stapleType]) : pickRandom(genreData.mains);
+
+    let comboKey = `${chosenGenre}-${stapleType || 'dish'}-${mainRecipe.method}`;
     if (comboKey === lastComboKey) {
-      chosenGenre = pickRandom(genres);
-      genreData = recipeDatabase[chosenGenre];
-      mainRecipe = pickRandom(genreData.mains);
-      comboKey = `${chosenGenre}-${mainRecipe.method}`;
+      if (!stapleType) {
+        chosenGenre = pickRandom(genres);
+        genreData = recipeDatabase[chosenGenre];
+      }
+      mainRecipe = stapleType ? pickRandom(stapleRecipes[stapleType]) : pickRandom(genreData.mains);
+      comboKey = `${chosenGenre}-${stapleType || 'dish'}-${mainRecipe.method}`;
     }
     lastComboKey = comboKey;
 
     const subRecipe = pickRandom(genreData.subs);
     const soupRecipe = pickRandom(genreData.soups);
 
-    // 主菜：加熱調理向きタンパク質優先
-    const mainIngList = cookProteins.length > 0
-      ? cookProteins.map(i => i.name)
-      : (cookCarbos.length > 0 ? cookCarbos.map(i => i.name) : (readyItems.length > 0 ? readyItems.map(i => i.name) : ['おまかせメイン食材']));
+    let mainIngList = [];
+    let subPool = [];
+    let sub2Pool = [];
+    let soupPool = [];
+
+    if (stapleType) {
+      mainIngList = [
+        stapleItem.name,
+        ...cookProteins.slice(0, 1).map(i => i.name),
+        ...cookVitamins.slice(0, 1).map(i => i.name)
+      ];
+      subPool = [...cookVitamins.slice(1, 3), ...readyItems.slice(0, 1)];
+      sub2Pool = [...readyItems.slice(1, 2)];
+      soupPool = [...cookVitamins.slice(3), ...cookProteins.slice(1)];
+    } else {
+      mainIngList = cookProteins.length > 0
+        ? [...cookProteins.map(i => i.name), ...cookTubers.slice(0, 1).map(i => i.name)]
+        : (cookTubers.length > 0 ? cookTubers.map(i => i.name) : (readyItems.length > 0 ? readyItems.map(i => i.name) : ['おまかせメイン食材']));
+
+      subPool = [...cookVitamins.slice(0, 2)];
+      if (chosenGenre === '和食') {
+        sub2Pool = readyItems.length > 0 ? readyItems.slice(0, 2) : cookVitamins.slice(2, 3);
+        soupPool = [...cookVitamins.slice(3), ...readyItems.slice(2)];
+      } else {
+        subPool.push(...readyItems.slice(0, 1));
+        soupPool = [...cookVitamins.slice(2), ...readyItems.slice(1)];
+      }
+    }
+
     const mainTitleIng = mainIngList.slice(0, 2).join('と');
     const mainUseIng = mainIngList.join('・');
 
-    // 副菜：野菜＋納豆・ちくわ・かまぼこ等
-    const subPool = [...cookVitamins.slice(0, 2), ...readyItems.slice(0, 1)];
-    const subIngList = subPool.length > 0 ? subPool.map(i => i.name) : ['旬の野菜'];
+    const subIngList = subPool.length > 0 ? subPool.map(i => i.name) : ['お好みの野菜'];
     const subTitleIng = subIngList.slice(0, 2).join('と');
     const subUseIng = subIngList.join('・');
 
-    // 汁物：炭水化物（ごはん・パン等）や果物は絶対に混ぜず、野菜・タンパク質・豆腐などを割り当て
-    const soupPool = [
-      ...cookVitamins.slice(2),
-      ...readyItems.slice(1),
-      ...(cookProteins.length > 0 ? cookProteins.slice(-1) : [])
-    ];
-    const soupIngList = soupPool.length > 0 ? soupPool.map(i => i.name) : ['豆腐・ねぎ'];
+    const soupIngList = soupPool.length > 0 ? soupPool.map(i => i.name) : ['お好みの具材'];
     const soupTitleIng = soupIngList.slice(0, 2).join('と');
     const soupUseIng = soupIngList.join('・');
 
-    document.getElementById('genreTitle').innerText = `✨ 本日の献立ヒント ${genreData.badgeTitle}`;
-    document.getElementById('genreSub').innerText = genreData.subText;
+    if (stapleType === 'noodle') {
+      document.getElementById('genreTitle').innerText = `✨ 本日の献立ヒント 【麺セット】`;
+      document.getElementById('genreSub').innerText = `汁被りなし！麺メイン＋さっぱり副菜の軽快バランス`;
+    } else if (stapleType) {
+      document.getElementById('genreTitle').innerText = `✨ 本日の献立ヒント 【ワンディッシュセット】`;
+      document.getElementById('genreSub').innerText = `主食メイン＋口直し副菜＋スープの満足バランス`;
+    } else {
+      document.getElementById('genreTitle').innerText = `✨ 本日の献立ヒント ${genreData.badgeTitle}`;
+      document.getElementById('genreSub').innerText = genreData.subText;
+    }
 
     addXP(120);
 
-    // 果物が選ばれていた場合は、料理に混ぜずに「食後のフルーツ・デザート枠」カードを追加
-    let fruitCardHtml = '';
+    // 1. 主菜カード（再生成ごとに画像プールから異なる画像を選択）
+    const mainImgUrl = pickFreshImage(mainRecipe.imgKey);
+    let cardsHtml = `
+      <div class="recipe-card">
+        <div class="recipe-img-wrapper">
+          <img class="recipe-img" src="${mainImgUrl}" alt="主菜">
+        </div>
+        <div class="recipe-body">
+          <div class="badge-row">
+            <span class="recipe-badge">${stapleType ? '主食・主菜 (メイン)' : '主菜 (メイン)'}</span>
+            <span class="method-tag">${mainRecipe.method}</span>
+          </div>
+          <div class="recipe-title">${mainRecipe.title(mainTitleIng)}</div>
+          <div class="recipe-ingredients">使用食材: ${mainUseIng}</div>
+          <div class="recipe-steps">${mainRecipe.step}</div>
+        </div>
+      </div>
+    `;
+
+    // 2. 副菜カード
+    const subImgUrl = pickFreshImage(subRecipe.imgKey);
+    cardsHtml += `
+      <div class="recipe-card">
+        <div class="recipe-img-wrapper">
+          <img class="recipe-img" src="${subImgUrl}" alt="副菜">
+        </div>
+        <div class="recipe-body">
+          <div class="badge-row">
+            <span class="recipe-badge sub">副菜 (サブ)</span>
+            <span class="method-tag">${subRecipe.method}</span>
+          </div>
+          <div class="recipe-title">${subRecipe.title(subTitleIng)}</div>
+          <div class="recipe-ingredients">使用食材: ${subUseIng}</div>
+          <div class="recipe-steps">${subRecipe.step}</div>
+        </div>
+      </div>
+    `;
+
+    // 3. 和食かつ麺類以外の場合は「副々菜（小鉢）」を追加
+    if (chosenGenre === '和食' && stapleType !== 'noodle') {
+      const sub2Recipe = pickRandom(recipeDatabase['和食'].sub2s);
+      const sub2IngList = sub2Pool.length > 0 ? sub2Pool.map(i => i.name) : ['お好みの小鉢食材'];
+      const sub2TitleIng = sub2IngList.slice(0, 2).join('と');
+      const sub2UseIng = sub2IngList.join('・');
+      const sub2ImgUrl = pickFreshImage(sub2Recipe.imgKey);
+
+      cardsHtml += `
+        <div class="recipe-card">
+          <div class="recipe-img-wrapper">
+            <img class="recipe-img" src="${sub2ImgUrl}" alt="副々菜">
+          </div>
+          <div class="recipe-body">
+            <div class="badge-row">
+              <span class="recipe-badge sub2">副々菜 (小鉢・箸休め)</span>
+              <span class="method-tag">${sub2Recipe.method}</span>
+            </div>
+            <div class="recipe-title">${sub2Recipe.title(sub2TitleIng)}</div>
+            <div class="recipe-ingredients">使用食材: ${sub2UseIng}</div>
+            <div class="recipe-steps">${sub2Recipe.step}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 4. 汁物カード
+    if (stapleType !== 'noodle') {
+      const soupImgUrl = pickFreshImage(soupRecipe.imgKey);
+      cardsHtml += `
+        <div class="recipe-card">
+          <div class="recipe-img-wrapper">
+            <img class="recipe-img" src="${soupImgUrl}" alt="汁物">
+          </div>
+          <div class="recipe-body">
+            <div class="badge-row">
+              <span class="recipe-badge soup">汁物 (スープ)</span>
+              <span class="method-tag">${soupRecipe.method}</span>
+            </div>
+            <div class="recipe-title">${soupRecipe.title(soupTitleIng)}</div>
+            <div class="recipe-ingredients">使用食材: ${soupUseIng}</div>
+            <div class="recipe-steps">${soupRecipe.step}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 5. 果物デザートカード
     if (fruits.length > 0) {
       const fruitNames = fruits.map(i => i.name).join('・');
+      const fruitImgUrl = pickFreshImage('fruit');
       const fruitIdeas = [
         {
           method: '🔪 カット・生食',
@@ -1397,10 +1705,10 @@
         }
       ];
       const chosenFruitIdea = pickRandom(fruitIdeas);
-      fruitCardHtml = `
+      cardsHtml += `
         <div class="recipe-card">
           <div class="recipe-img-wrapper">
-            <img class="recipe-img" src="${IMG.fruit}" alt="デザート">
+            <img class="recipe-img" src="${fruitImgUrl}" alt="デザート">
           </div>
           <div class="recipe-body">
             <div class="badge-row">
@@ -1415,52 +1723,10 @@
       `;
     }
 
-    const container = document.getElementById('recipeCardsContainer');
-    container.innerHTML = `
-      <div class="recipe-card">
-        <div class="recipe-img-wrapper">
-          <img class="recipe-img" src="${mainRecipe.img}" alt="主菜">
-        </div>
-        <div class="recipe-body">
-          <div class="badge-row">
-            <span class="recipe-badge">主菜 (メイン)</span>
-            <span class="method-tag">${mainRecipe.method}</span>
-          </div>
-          <div class="recipe-title">${mainRecipe.title(mainTitleIng)}</div>
-          <div class="recipe-ingredients">使用食材: ${mainUseIng}</div>
-          <div class="recipe-steps">${mainRecipe.step}</div>
-        </div>
-      </div>
-      <div class="recipe-card">
-        <div class="recipe-img-wrapper">
-          <img class="recipe-img" src="${subRecipe.img}" alt="副菜">
-        </div>
-        <div class="recipe-body">
-          <div class="badge-row">
-            <span class="recipe-badge sub">副菜 (サブ)</span>
-            <span class="method-tag">${subRecipe.method}</span>
-          </div>
-          <div class="recipe-title">${subRecipe.title(subTitleIng)}</div>
-          <div class="recipe-ingredients">使用食材: ${subUseIng}</div>
-          <div class="recipe-steps">${subRecipe.step}</div>
-        </div>
-      </div>
-      <div class="recipe-card">
-        <div class="recipe-img-wrapper">
-          <img class="recipe-img" src="${soupRecipe.img}" alt="汁物">
-        </div>
-        <div class="recipe-body">
-          <div class="badge-row">
-            <span class="recipe-badge soup">汁物 (スープ)</span>
-            <span class="method-tag">${soupRecipe.method}</span>
-          </div>
-          <div class="recipe-title">${soupRecipe.title(soupTitleIng)}</div>
-          <div class="recipe-ingredients">使用食材: ${soupUseIng}</div>
-          <div class="recipe-steps">${soupRecipe.step}</div>
-        </div>
-      </div>
-      ${fruitCardHtml}
-    `;
+    document.getElementById('recipeCardsContainer').innerHTML = cardsHtml;
+    localStorage.setItem('fridge_quest_last_recipe_html', cardsHtml);
+    localStorage.setItem('fridge_quest_last_recipe_title', document.getElementById('genreTitle').innerText);
+    localStorage.setItem('fridge_quest_last_recipe_sub', document.getElementById('genreSub').innerText);
     switchTab('recipe');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
